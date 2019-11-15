@@ -4,10 +4,15 @@ import Vue from 'vue'
 import App from './App'
 
 import router from './router'
-
+import store from "./store";
+import moment from 'moment'
+Vue.prototype.$moment = moment
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 Vue.use(ElementUI);
+
+import echarts from 'echarts'
+Vue.prototype.$echarts = echarts
 
 import "./styles/index.css"
 
@@ -27,6 +32,7 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
 })

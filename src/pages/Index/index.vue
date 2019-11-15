@@ -1,7 +1,9 @@
 <template>
   <div class="main">
     <el-container>
-      <el-header></el-header>
+      <el-header style="padding:0">
+          
+      </el-header>
       <el-container class="content">
         <el-aside width="200px">
           <el-menu
@@ -135,23 +137,25 @@ export default {
   height: 100%;
 }
 .el-header {
-  background-color: #b3c0d1;
+  // background-color: #ececec;
   color: #333;
   height: 12%;
 }
 
 .el-aside {
-  background-color: #d3dce6;
   color: #333;
   height: 100%;
+  background: #313445;
 }
-
 .el-main {
-  background-color: #e9eef3;
+  background-color: #f2f3f7;
   color: #333;
   height: 100%;
+  .call{
+    width: 100%;
+    height: 100%;
+  }
 }
-
 .el-container {
   height: 100%;
   width: 100%;
