@@ -2,7 +2,25 @@
   <div class="main">
     <el-container>
       <el-header style="padding:0">
-          
+        <el-row type="flex" justify="space-between">
+          <el-col>
+            <img src="../../assets/images/logo.png" />
+            <span class="headerTitle">运维云平台</span>
+          </el-col>
+          <el-col class="headerRight">
+            <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                马冬梅
+                <i class="el-icon-arrow-down el-icon--right"></i>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item>黄金糕</el-dropdown-item>
+                <el-dropdown-item>狮子头</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </el-col>
+        </el-row>
       </el-header>
       <el-container class="content">
         <el-aside width="200px">
@@ -37,12 +55,17 @@
             <!-- 设备管理 -->
             <el-submenu index="2">
               <template slot="title">
-                <i class="el-icon-location"></i>
+                <i class="iconfont icon-shebeiguanli"></i>
                 <span>设备管理</span>
               </template>
               <el-menu-item-group>
                 <el-menu-item index="/equipmentlist">设备列表</el-menu-item>
-                <el-menu-item index="/equipmentmonitor">设备监控</el-menu-item>
+                <!-- <el-menu-item index="/equipmentmonitor">设备监控</el-menu-item> -->
+                <el-submenu index="/equipmentmonitor">
+                  <template slot="title">设备监控</template>
+                  <el-menu-item index="/equipmentmonitor">呼叫器监控</el-menu-item>
+                  <el-menu-item index="/FRPmonitor">FRP监控</el-menu-item>
+                </el-submenu>
                 <el-menu-item index="/equipmentanalyze">设备分析</el-menu-item>
                 <el-menu-item index="/parklotmonitor">车场监控</el-menu-item>
               </el-menu-item-group>
@@ -131,27 +154,72 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .main {
   width: 100%;
   height: 100%;
 }
 .el-header {
-  // background-color: #ececec;
   color: #333;
   height: 12%;
+  .el-row {
+    height: 100%;
+    .el-col {
+      height: 100%;
+      width: 200px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      font-size: 20px;
+      color: #fff;
+      background: #3e549d;
+      img {
+        width: 30px;
+        height: 30px;
+      }
+      .headerTitle {
+        border-left: 1px solid #fff;
+        padding: 0 20px;
+      }
+    }
+    .headerRight {
+      background: url("../../assets/images/loginBack.png") no-repeat;
+      background-size: cover;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .el-avatar {
+        width: 30px;
+        height: 30px;
+      }
+      .el-dropdown-link {
+        cursor: pointer;
+        color: #409eff;
+      }
+      .el-icon-arrow-down {
+        font-size: 12px;
+      }
+    }
+  }
 }
 
 .el-aside {
   color: #333;
   height: 100%;
   background: #313445;
+  .icon-shebeiguanli {
+    font-size: 18px;
+    // display: block;
+    // width: 24px;
+    margin-right: 10px;
+  }
 }
 .el-main {
   background-color: #f2f3f7;
   color: #333;
   height: 100%;
-  .call{
+  .call {
     width: 100%;
     height: 100%;
   }

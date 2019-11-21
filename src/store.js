@@ -9,7 +9,7 @@ const store =new Vuex.Store({
         data:'1234'
     },
     actions:{
-
+        
     },
     mutations:{
 

@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
 
 //解决两次点击跳转相同路由问题
 const routerPush = Router.prototype.push
@@ -21,6 +20,7 @@ export default new Router({
       path: "/",
       name: "index",
       component: () => import("@/pages/Index"),
+      redirect: { name: "longcutoff" },
       children: [
         {
           path: "/longcutoff",
@@ -61,10 +61,16 @@ export default new Router({
           path: "/servicemanage",
           name: "servicemanage",
           component: () => import("@/pages/Servicemanage")
+        },
+        {
+          path: "/FRPmonitor",
+          name: "FRPmonitor",
+          component: () => import("@/pages/FRPmonitor")
         }
 
       ]
     },
+    { path: "**", redirect: { name: "longcutoff" } }
 
 
   ]
