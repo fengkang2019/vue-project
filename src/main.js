@@ -4,17 +4,22 @@ import Vue from 'vue'
 import App from './App'
 
 import router from './router'
+import store from "./store";
 
+import moment from 'moment'
+Vue.prototype.$moment = moment
+import "@/styles/font/iconfont.css"
+import "./styles/index.css"
+import "@/utils/elementUi.js"
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
-Vue.use(ElementUI);
 
-import "./styles/index.css"
+import echarts from 'echarts'
+Vue.prototype.$echarts = echarts
 
 import VueLazyload from "vue-lazyload";
 Vue.use(VueLazyload);
-
-import axios from "axios";
+import axios from "@/utils/axios";
 import VueAxios from 'vue-axios'
 // Vue.use(VueAxios, axios)
 Vue.prototype.$axios = axios;
@@ -25,8 +30,8 @@ Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
-})
+}).$mount("#app")

@@ -9,15 +9,19 @@
       <el-col class="rightCol" :span="10">
         <div class="grid-content bg-purple">
           <p>欢迎登陆运维平台</p>
-          <el-form :model="login">
-            <el-form-item>
-              <el-input placeholder="请输入用户名" prefix-icon="el-icon-user-solid" v-model="login.username"></el-input>
+          <el-form :model="login" :rules="rules" ref="logForm">
+            <el-form-item prop="username">
+              <el-input
+                placeholder="请输入用户名"
+                prefix-icon="el-icon-user-solid"
+                v-model="login.username"
+              ></el-input>
             </el-form-item>
-            <el-form-item>
-              <el-input placeholder="密码" prefix-icon="el-icon-lock"  v-model="login.password"></el-input>
+            <el-form-item prop="password">
+              <el-input placeholder="密码" prefix-icon="el-icon-lock" v-model="login.password"></el-input>
             </el-form-item>
             <el-form-item class="check">
-               <el-checkbox v-model="checked">记住用户名密码</el-checkbox>
+              <el-checkbox v-model="checked">记住用户名密码</el-checkbox>
             </el-form-item>
             <el-form-item>
               <el-button :round="round" type="primary" @click="onSubmit">登陆</el-button>
@@ -37,13 +41,25 @@ export default {
         username: "",
         password: ""
       },
+      rules: {
+        username: [
+          { required: true, message: "请输入用户名", trigger: "blur" }
+        ],
+        password: [{ required: true, message: "请输入密码", trigger: "blur" }]
+      },
       round: false,
       checked: false
     };
   },
   methods: {
-    onSubmit: function() {
-      console.log(this.login,this.checked);
+    onSubmit: function(login) {
+      this.$refs.logForm.validate(valid => {
+        if (valid) {
+          console.log(this.login, "登录");
+        } else {
+          return false;
+        }
+      });
     }
   }
 };
@@ -74,11 +90,20 @@ export default {
         }
         p {
           height: 100px;
-          line-height: 100px;font-size:18px;color:#393939
+          line-height: 100px;
+          font-size: 18px;
+          color: #393939;
         }
         .el-button {
           width: 100%;
-        };.check{text-align:right}; .el-input{outline-color:#3d539e;color:#3d539e}
+        }
+        .check {
+          text-align: right;
+        }
+        .el-input {
+          outline-color: #3d539e;
+          color: #3d539e;
+        }
       }
     }
     .rightCol {
