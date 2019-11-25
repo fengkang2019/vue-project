@@ -1,7 +1,7 @@
 <template>
   <div class="parklotmonitor">
     <el-form label-position="center" ref="form" :model="form" class="form">
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="7">
           <div class="grid-content bg-purple">
             <el-form-item label="时间">
@@ -38,7 +38,7 @@
           </div>
         </el-col>
       </el-row>
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="7">
           <div class="grid-content bg-purple">
             <el-form-item label="停车场">
@@ -76,7 +76,7 @@
         </el-col>
       </el-row>
     </el-form>
-    <el-row class="videoArea" :gutter="20">
+    <el-row class="videoArea" >
       <el-col>
         <div class="grid-content bg-purple">1</div>
       </el-col>
@@ -106,7 +106,9 @@ export default {
     return {
       form: {
         timerange: "",
-        date: "1"
+        date: "1",
+        startTime: "",
+        endTime: ""
       },
       rangeTime: ["00:00:00", "23:59:59"],
       pickerOptions: {
@@ -122,6 +124,8 @@ export default {
     },
     changeTime(value) {},
     onSubmit: function(form) {
+      this.form.startTime = form.timerange[0];
+      this.form.endTime = form.timerange[1];
       console.log(form);
     }
   }
@@ -140,6 +144,7 @@ export default {
 .form {
   .el-row {
     background: #fff;
+    padding: 5px;
     .el-col {
       background: #fff;
       height: 40px;
@@ -190,5 +195,8 @@ export default {
 }
 .btnCol {
   text-align: center;
+  .btn{
+    background: #3e549d;
+  }
 }
 </style>

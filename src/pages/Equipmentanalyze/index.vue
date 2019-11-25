@@ -1,7 +1,7 @@
 <template>
   <div class="equipmentanalyze">
     <el-form label-position="center" ref="form" :model="form" class="form">
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="7">
           <div class="grid-content bg-purple">
             <el-form-item label="时间">
@@ -55,12 +55,12 @@
         </el-col>
       </el-row>
     </el-form>
-    <el-row class="echart" :gutter="20">
+    <el-row class="echart">
       <el-col :span="24">
         <Bar chartId="Bar" height="100%" width="100%" text="故障分析" />
       </el-col>
     </el-row>
-    <el-row class="echart" :gutter="20" type="flex" justify="space-between">
+    <el-row class="echart" type="flex" justify="space-between">
       <el-col style="width:49.5%">
         <Pie chartId="PieLeft" height="100%" width="100%" text="故障厂商分析" />
       </el-col>
@@ -82,7 +82,9 @@ export default {
     return {
       form: {
         timerange: "",
-        date: "1"
+        date: "1",
+        startTime: "",
+        endTime: ""
       },
       rangeTime: ["00:00:00", "23:59:59"],
       pikerOptions: {
@@ -97,6 +99,8 @@ export default {
       this.form.timerange = chooseDate(date, this.form.timerange);
     },
     onSubmit: function(form) {
+      this.form.startTime = form.timerange[0];
+      this.form.endTime = form.timerange[1];
       console.log(form);
     },
     changeTime(value) {}
@@ -117,6 +121,7 @@ export default {
 .form {
   .el-row {
     background: #fff;
+    padding: 5px;
     .el-col {
       background: #fff;
       height: 40px;

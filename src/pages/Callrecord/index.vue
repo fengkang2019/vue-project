@@ -1,7 +1,7 @@
 <template>
   <div class="call">
     <el-form label-position="center" ref="form" :model="form" class="form">
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="20">
           <div class="grid-content bg-purple">
             <el-radio-group v-model="value" size="small" fill="#3e549d">
@@ -12,11 +12,11 @@
         </el-col>
         <el-col :span="4" v-if="value==1">
           <div class="grid-content bg-purple export">
-            <el-button size="small" class="btn" type="primary">导出</el-button>
+            <el-button size="small" class="btn" @click="exportToExcel" type="primary">导出</el-button>
           </div>
         </el-col>
       </el-row>
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="时间" label-width="90px">
@@ -74,7 +74,7 @@
           </div>
         </el-col>
       </el-row>
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="7" v-if="value==1">
           <div class="grid-content bg-purple">
             <el-form-item label="接听状态">
@@ -124,7 +124,7 @@
         </el-col>
       </el-row>
     </el-form>
-    <el-row v-if="value==2" class="downRow" :gutter="20" type="flex" justify="space-between">
+    <el-row v-if="value==2" class="downRow" type="flex" justify="space-between">
       <el-col style="width:49.5%">
         <Pie chartId="Pie1" height="100%" width="100%" text="接听状态分析" />
       </el-col>
@@ -132,7 +132,7 @@
         <Pie chartId="Pie2" height="100%" width="100%" text="呼叫类型分析" />
       </el-col>
     </el-row>
-    <el-row v-if="value==2" class="downRow" :gutter="20" type="flex" justify="space-between">
+    <el-row v-if="value==2" class="downRow" type="flex" justify="space-between">
       <el-col style="width:49.5%">
         <Pie chartId="Pie3" height="100%" width="100%" text="接听等待时长分析" />
       </el-col>
@@ -140,19 +140,19 @@
         <Pie chartId="Pie4" height="100%" width="100%" text="任务处理时长分析" />
       </el-col>
     </el-row>
-    <el-row v-if="value==2" class="downRow" :gutter="20">
+    <el-row v-if="value==2" class="downRow">
       <el-col :span="24">
         <Bar chartId="Bar" height="100%" width="100%" text="开闸次数统计" />
       </el-col>
     </el-row>
-    <el-row class="downRow2" :gutter="20" v-if="value==1">
+    <el-row class="downRow2" v-if="value==1">
       <el-table
-        :data="tableData.slice((currentPage-1)*pagesize,currentPage*pagesize)"
+        :data="tableData.slice((form.current-1)*form.size,form.current*form.size)"
         border
         style="width: 100%"
         :fit="true"
       >
-        <el-table-column fixed prop="series" label="序号"></el-table-column>
+        <el-table-column fixed prop="index" label="序号"></el-table-column>
         <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
         <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
@@ -160,7 +160,7 @@
         <el-table-column fixed prop="callTime" label="呼入时间"></el-table-column>
         <el-table-column fixed prop="status" label="接听状态"></el-table-column>
         <el-table-column fixed prop="awaitTime" label="接听等待时长"></el-table-column>
-        <el-table-column fixed prop="service" label="当班客服"></el-table-column>
+        <el-table-column fixed prop="userNo" label="当班客服"></el-table-column>
         <el-table-column fixed prop="handleTime" label="处理时间"></el-table-column>
         <el-table-column fixed prop="handleDuration" label="处理时长"></el-table-column>
         <el-table-column fixed prop="remark" label="未接听原因"></el-table-column>
@@ -170,12 +170,12 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="currentPage"
-          :page-size="pagesize"
+          :current-page="form.current"
+          :page-size="form.size"
           :page-sizes="[5, 10, 15, 20]"
           background
           layout="total, prev, pager, next, sizes, jumper"
-          :total="400"
+          :total="form.total"
         ></el-pagination>
       </div>
     </el-row>
@@ -201,7 +201,12 @@ export default {
         regionCode: "",
         status: "",
         type: "",
-        userNo: ""
+        userNo: "",
+        startTime: "",
+        endTime: "",
+        current: 1,
+        size: 10,
+        total: 0
       },
       rangeTime: ["00:00:00", "23:59:59"],
       pickerOptions: {
@@ -209,62 +214,17 @@ export default {
           return time.getTime() > Date.now();
         }
       },
-      tableData: [
-        {
-          series: "1",
-          parkCode: "sss",
-          regionCode: "上海",
-          devNo: "12344",
-          type: "按键呼叫",
-          callTime: 2019 - 10 - 1,
-          status: "一接听",
-          awaitTime: "30",
-          service: "铁柱",
-          handleTime: "2019-20-1",
-          handleDuration: "20s",
-          remark: "buzhidao"
-        }
-      ],
-      currentPage: 1,
-      pagesize: 10
+      tableData: []
     };
   },
   methods: {
     changeDate: function(date) {
-      // let endTime = this.$moment().format("YYYYMMDD" + "235959");
-      // let startTime = "";
-      // console.log(this.$store);
-      // if (date == 1) {
-      //   this.form.timerange = [
-      //     (startTime = this.$moment().format("YYYYMMDD" + "000000")),
-      //     endTime
-      //   ];
-      // } else if (date == 2) {
-      //   this.form.timerange = [
-      //     (startTime = this.$moment()
-      //       .subtract(1, "day")
-      //       .format("YYYYMMDD" + "000000")),
-      //     endTime
-      //   ];
-      // } else if (date == 3) {
-      //   this.form.timerange = [
-      //     (startTime = this.$moment()
-      //       .subtract(7, "day")
-      //       .format("YYYYMMDD" + "000000")),
-      //     endTime
-      //   ];
-      // } else {
-      //   this.form.timerange = [
-      //     (startTime = this.$moment()
-      //       .subtract(30, "day")
-      //       .format("YYYYMMDD" + "000000")),
-      //     endTime
-      //   ];
-      // }
       this.form.timerange = chooseDate(date, this.form.timerange);
     },
     onSubmit: function(form) {
-      console.log(form);
+      this.form.startTime = form.timerange[0];
+      this.form.endTime = form.timerange[1];
+      this.searchRecord();
     },
     changeTime(value) {},
     handleClick(row) {
@@ -272,27 +232,90 @@ export default {
     },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
-      this.pagesize = val;
+      this.size = val;
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
-      this.currentPage = val;
+      this.current = val;
+    },
+    //点击导出
+    exportToExcel() {
+      require.ensure([], () => {
+        const {
+          export_json_to_excel
+        } = require("../../assets/js/Export2Excel");
+        const tHeader = [
+          "序号",
+          "停车场",
+          "区域",
+          "呼叫器编号",
+          "呼叫类型",
+          "呼入时间",
+          "接听状态",
+          "接听等待时长",
+          "当班客服",
+          "处理时间",
+          "处理时长",
+          "备注"
+        ];
+        const filterVal = [
+          "index",
+          "parkCode",
+          "regionCode",
+          "devNo",
+          "type",
+          "callTime",
+          "status",
+          "awaitTime",
+          "service",
+          "handleTime",
+          "handleDuration",
+          "remark"
+        ];
+        const list = this.tableData;
+        const data = this.formatJson(filterVal, list);
+        export_json_to_excel(tHeader, data, "呼叫记录excel");
+      });
+    },
+    formatJson(filterVal, jsonData) {
+      return jsonData.map(v => filterVal.map(j => v[j]));
+    },
+    searchRecord() {
+      const that = this;
+      const reqData = {
+        current: this.form.current,
+        size: this.form.current,
+        startTime: this.form.startTime,
+        endTime: this.form.endTime,
+        parkCode: this.form.parkCode,
+        regionCode: this.form.regionCode,
+        status: this.form.status,
+        type: this.form.type,
+        userNo: this.form.userNo
+      };
+      this.$axios.post("/pagerSelect/searchRecord", reqData).then(res => {
+        if (res) {
+          const { records, size, current, total } = res.data;
+          records.map((item, index) => {
+            item.index = index + 1;
+            that.$set(that.tableData, index, item);
+          });
+          this.form.size = size;
+          this.form.current = current;
+          this.total = total;
+        } else {
+          return false;
+        }
+      });
     }
   },
   computed: {
     ...mapState(["data"])
-  },
-  mounted() {
-    console.log(baseJavaUrl, kesbJavaURL);
-    console.log(commodRequest);
-    this.$axios.get("/topic_collect/alsotang").then(res => {
-      console.log(res);
-    });
   }
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" >
 .call {
   height: 100%;
   .downRow {
@@ -305,7 +328,9 @@ export default {
   }
   .downRow2 {
     margin-top: 10px;
-    height: 490px;
+    // height: 490px;
+    padding: 10px;
+    background: #fff;
     .cell {
       text-align: center;
     }
@@ -329,6 +354,7 @@ export default {
   background: #fff;
   .el-row {
     background: #fff;
+    padding: 5px;
     .el-col {
       background: #fff;
       height: 40px;

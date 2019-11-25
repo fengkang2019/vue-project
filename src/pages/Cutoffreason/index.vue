@@ -1,7 +1,7 @@
 <template>
   <div class="cutoffreason">
     <el-form label-position="center" ref="form" :model="form" class="form">
-      <el-row :gutter="20">
+      <el-row >
         <el-col :span="20">
           <div class="grid-content bg-purple">
             <el-radio-group v-model="value" size="small" fill="#3e549d">
@@ -12,11 +12,11 @@
         </el-col>
         <el-col :span="4" v-if="value==1">
           <div class="grid-content bg-purple export">
-            <el-button size="small" class="btn" type="primary">导出</el-button>
+            <el-button size="small" class="btn" type="primary" @click="exportToExcel">导出</el-button>
           </div>
         </el-col>
       </el-row>
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="时间" label-width="90px">
@@ -56,7 +56,7 @@
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="停车场" label-width="80px">
-              <el-select v-model="form.parklot" clearable placeholder="请输入停车场名称" size="small">
+              <el-select v-model="form.parkCode" clearable placeholder="请输入停车场名称" size="small">
                 <el-option value="1" label="广东"></el-option>
                 <el-option value="2" label="深圳"></el-option>
               </el-select>
@@ -66,7 +66,7 @@
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="区域" label-width="80px">
-              <el-select v-model="form.area" clearable placeholder="请选择区域" size="small">
+              <el-select v-model="form.regionCode" clearable placeholder="请选择区域" size="small">
                 <el-option value="1" label="广东"></el-option>
                 <el-option value="2" label="深圳"></el-option>
               </el-select>
@@ -74,7 +74,7 @@
           </div>
         </el-col>
       </el-row>
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="7" v-if="value==1">
           <div class="grid-content bg-purple">
             <el-form-item label="车牌号">
@@ -115,7 +115,7 @@
         </el-col>
       </el-row>
     </el-form>
-    <el-row class="tableRow" :gutter="20" v-if="value==1">
+    <el-row class="tableRow" v-if="value==1">
       <el-table
         :data="tableData.slice((currentPage-1)*pagesize,currentPage*pagesize)"
         border
@@ -123,17 +123,19 @@
         :fit="true"
       >
         <el-table-column fixed prop="series" label="序号"></el-table-column>
-        <el-table-column fixed prop="parklot" label="停车场"></el-table-column>
-        <el-table-column fixed prop="area" label="区域"></el-table-column>
-        <el-table-column fixed prop="callNum" label="呼叫器编号"></el-table-column>
-        <el-table-column fixed prop="callType" label="呼叫类型"></el-table-column>
+        <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
+        <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
+        <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
+        <el-table-column fixed prop="carNum" label="车牌号"></el-table-column>
         <el-table-column fixed prop="callTime" label="呼入时间"></el-table-column>
-        <el-table-column fixed prop="answerStatus" label="接听状态"></el-table-column>
-        <el-table-column fixed prop="awaitTime" label="接听等待时长"></el-table-column>
-        <el-table-column fixed prop="service" label="当班客服"></el-table-column>
-        <el-table-column fixed prop="handleTime" label="处理时间"></el-table-column>
-        <el-table-column fixed prop="handleTimes" label="处理时长"></el-table-column>
-        <el-table-column fixed prop="reason" label="未接听原因"></el-table-column>
+        <el-table-column fixed prop="oprator" label="开闸人"></el-table-column>
+        <el-table-column fixed prop="abnormal" label="异常开闸原因"></el-table-column>
+        <el-table-column fixed prop="remark" label="备注"></el-table-column>
+        <el-table-column fixed="right" label="操作">
+          <template slot-scope="scope">
+            <el-button @click="lookPic(scope.row)" type="text" size="small">查看图片</el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <div class="block">
         <span class="demonstration"></span>
@@ -150,12 +152,12 @@
         ></el-pagination>
       </div>
     </el-row>
-    <el-row :gutter="20" class="chartsRow" v-if="value==2">
+    <el-row  class="chartsRow" v-if="value==2">
       <el-col :span="24">
         <Bar chartId="Bar2" height="100%" width="100%" text="开闸次数统计" />
       </el-col>
     </el-row>
-    <el-row class="chartsRow" :gutter="20" v-if="value==2" type="flex" justify="space-between">
+    <el-row class="chartsRow"  v-if="value==2" type="flex" justify="space-between">
       <el-col style="width:49.5%">
         <Pie chartId="Pie5" height="100%" width="100%" text="异常开闸时段分析" />
       </el-col>
@@ -177,8 +179,10 @@ export default {
     return {
       value: "1",
       form: {
-        timerange: "",
-        date: "1"
+        timerange: [],
+        date: "1",
+        startTime: "",
+        endTime: ""
       },
       rangeTime: ["00:00:00", "23:59:59"],
       pickerOptions: {
@@ -189,17 +193,14 @@ export default {
       tableData: [
         {
           series: "1",
-          parklot: "sss",
-          area: "上海",
-          callNum: "12344",
-          callType: "按键呼叫",
+          parkCode: "sss",
+          regionCode: "上海",
+          devNo: "12344",
+          carNum: "鄂A123456",
           callTime: "2019 - 10 - 1",
-          answerStatus: "一接听",
-          awaitTime: "30",
-          service: "铁柱",
-          handleTime: "2019-20-1",
-          handleTimes: "20s",
-          reason: "buzhidao"
+          oprator: "一接听",
+          abnormal: "30",
+          remark: "xxxxx"
         }
       ],
       currentPage: 1,
@@ -211,6 +212,8 @@ export default {
       this.form.timerange = chooseDate(date, this.form.timerange);
     },
     onSubmit: function(form) {
+      this.form.startTime = form.timerange[0];
+      this.form.endTime = form.timerange[1];
       console.log(form);
     },
     changeTime(value) {},
@@ -224,6 +227,46 @@ export default {
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val;
+    },
+    //点击导出
+    exportToExcel: function() {
+      require.ensure([], () => {
+        const {
+          export_json_to_excel
+        } = require("../../assets/js/Export2Excel");
+        const tHeader = [
+          "序号",
+          "停车场",
+          "区域",
+          "呼叫器编号",
+          "车牌号",
+          "呼入时间",
+          "开闸人",
+          "异常开闸原因",
+          "备注"
+        ];
+        const filterVal = [
+          "series",
+          "parkCode",
+          "regionCode",
+          "devNo",
+          "carNum",
+          "callTime",
+          "oprator",
+          "abnormal",
+          "remark"
+        ];
+        const list = this.tableData;
+        const data = this.formatJson(filterVal, list);
+        export_json_to_excel(tHeader, data, "开闸原因excel");
+      });
+    },
+    formatJson(filterVal, jsonData) {
+      return jsonData.map(v => filterVal.map(j => v[j]));
+    },
+    //查看图片
+    lookPic(val) {
+      console.log(val);
     }
   }
 };
@@ -246,7 +289,8 @@ export default {
   .tableRow {
     width: 100%;
     margin-top: 10px;
-    background: #ececec;
+    padding: 10px;
+    background: #fff;
     .el-col {
       // height: 235px;
     }
@@ -270,6 +314,7 @@ export default {
     background: #fff;
     height: 40px;
     line-height: 40px;
+    padding: 5px;
     .bg-purple-dark {
       background: #fff;
       .bg-purple {

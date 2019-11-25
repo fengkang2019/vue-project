@@ -23,7 +23,7 @@
         </el-row>
       </el-header>
       <el-container class="content">
-        <el-aside width="200px">
+        <el-aside width="13%">
           <el-menu
             :router="true"
             :collapse-transition="true"
@@ -166,7 +166,7 @@ export default {
     height: 100%;
     .el-col {
       height: 100%;
-      width: 200px;
+      width: 13%;
       display: flex;
       justify-content: space-around;
       align-items: center;
@@ -208,6 +208,15 @@ export default {
   color: #333;
   height: 100%;
   background: #313445;
+  overflow: hidden;
+  .el-menu{
+    width: 100%;
+    li.el-submenu{
+      width: 100%;
+      li.el-menu-item-group{
+      }
+    }
+  }
   .icon-shebeiguanli {
     font-size: 18px;
     // display: block;
@@ -219,6 +228,7 @@ export default {
   background-color: #f2f3f7;
   color: #333;
   height: 100%;
+  padding: 15px;
   .call {
     width: 100%;
     height: 100%;

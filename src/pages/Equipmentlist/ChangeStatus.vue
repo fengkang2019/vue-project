@@ -15,7 +15,7 @@
 
 <script>
 export default {
-  props: ["state", "msg", "status"],
+  props: ["state", "msg", "status","currentData"],
   data() {
     return {};
   },
@@ -26,12 +26,15 @@ export default {
     confirm: function() {
       this.$parent.state = false;
       if (this.status == "0") {
-        console.log("回复正常");
+        this.$parent.confirmEdit(this.currentData)
       } else if (this.status == "1") {
-        console.log("故障");
+        this.$parent.confirmEdit(this.currentData)
       } else {
-        console.log("报废");
+        this.$parent.confirmEdit(this.currentData)
+
       }
+      this.$parent.state = false;
+
     },
     cancel: function() {
       this.$parent.state = false;

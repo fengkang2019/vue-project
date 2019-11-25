@@ -28,11 +28,11 @@ axios.interceptors.request.use(function (config) {
 
 axios.interceptors.response.use(function (response) {
     //成功接收到数据
-
+    console.log(response)
     return response;
 
-
 }, function (error) {
+    console.log(error)
     return Promise.reject(error)
 })
 

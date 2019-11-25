@@ -1,7 +1,7 @@
 <template>
-  <div class="monitor">
+  <div id="monitor">
     <el-form ref="form" :model="form" class="form" label-width="100px">
-      <el-row :gutter="20">
+      <el-row>
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item size="small" label="所属停车场">
@@ -27,7 +27,7 @@
         </el-col>
       </el-row>
     </el-form>
-    <el-row class="status" :gutter="20">
+    <el-row class="status">
       <el-col :span="24">
         <span>呼叫器状态说明:</span>
         <div class="online"></div>
@@ -38,7 +38,7 @@
         <span>故障</span>
       </el-col>
     </el-row>
-    <el-row class="contentRow" :gutter="20" type="flex" justify="space-between">
+    <el-row class="contentRow" type="flex" justify="space-between">
       <el-col style="width:14%">
         <div class="grid-content bg-purple">
           <img src="@/assets/images/online.png" alt />
@@ -75,7 +75,7 @@
         <div class="grid-content bg-purple">7</div>
       </el-col>
     </el-row>
-    <el-row class="contentRow contentRowDown" :gutter="20" type="flex" justify="space-between">
+    <el-row class="contentRow contentRowDown" type="flex" justify="space-between">
       <el-col style="width:14%">
         <div class="grid-content bg-purple">1</div>
       </el-col>
@@ -120,7 +120,7 @@ export default {
 </script>
 
 <style lang="scss">
-.monitor {
+#monitor {
   width: 100%;
   height: 100%;
   .el-form-item__label {
@@ -164,63 +164,11 @@ export default {
     }
   }
 
-  .contentRow {
-    background: #fff;
-    height: 260px;
-    .el-col {
-      padding: 10px;
-      .grid-content {
-        width: 100%;
-        height: 100%;
-        background: #f6f6f6;
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
-        text-align: center;
-        position: relative;
-        img {
-          margin-top: 10px;
-        }
-        p {
-          width: 100%;
-          text-align: left;
-          text-indent: 3rem;
-          line-height: 20px;
-        }
-        p:nth-child(2n) {
-          font-weight: 700;
-        }
-        div.hoverDiv {
-          position: absolute;
-          background: #8a8a8a;
-          width: 100%;
-          height: 60%;
-          bottom: 0;
-          left: 0;
-          border-bottom-left-radius: 10px;
-          border-bottom-right-radius: 10px;
-          border: 1px solid #e0e0e0;
-          display: none;
-        }
-      }
-      div.hoverDiv > p:first-child {
-        margin-top: 10px;
-      }
-      div.hoverDiv > p:nth-child(2n + 1) {
-        font-weight: 700;
-      }
-      div.hoverDiv > p:nth-child(2n) {
-        font-weight: 500;
-      }
-      .grid-content:hover div.hoverDiv {
-        display: block;
-        color: #fff;
-      }
-    }
-  }
   .form {
     font-size: 12px;
     .el-row {
       background: #fff;
+      padding: 5px;
       .el-col {
         background: #fff;
         height: 40px;
@@ -252,6 +200,59 @@ export default {
   }
   .el-input {
     margin-top: 5px;
+  }
+}
+.contentRow {
+  background: #fff;
+  height: 260px;
+  .el-col {
+    padding: 10px;
+    .grid-content {
+      width: 100%;
+      height: 100%;
+      background: #f6f6f6;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+      position: relative;
+      img {
+        margin-top: 10px;
+      }
+      p {
+        width: 100%;
+        text-align: left;
+        text-indent: 3rem;
+        line-height: 20px;
+      }
+      p:nth-child(2n) {
+        font-weight: 700;
+      }
+      div.hoverDiv {
+        position: absolute;
+        background: #8a8a8a;
+        width: 100%;
+        height: 60%;
+        bottom: 0;
+        left: 0;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border: 1px solid #e0e0e0;
+        display: none;
+      }
+    }
+    div.hoverDiv > p:first-child {
+      margin-top: 10px;
+    }
+    div.hoverDiv > p:nth-child(2n + 1) {
+      font-weight: 700;
+    }
+    div.hoverDiv > p:nth-child(2n) {
+      font-weight: 500;
+    }
+    .grid-content:hover div.hoverDiv {
+      display: block;
+      color: #fff;
+    }
   }
 }
 </style>

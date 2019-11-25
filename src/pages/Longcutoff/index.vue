@@ -1,7 +1,7 @@
 <template>
   <div class="cutoff">
-    <el-row :gutter="20">
-      <el-col class="left" :span="4">
+    <el-row :gutter="4">
+      <el-col class="left" :span="5">
         <div class="grid-content bg-purple">
           <el-row class="callrecord">
             <el-col>
@@ -33,7 +33,12 @@
                     <span>挂断</span>
                   </div>
                 </el-tab-pane>
-                <el-tab-pane label="未接听" name="second">配置管理</el-tab-pane>
+                <el-tab-pane>
+                  <span slot="label">
+                    <el-badge class="mark" value="12">未接听</el-badge>
+                  </span>
+                  配置管理
+                </el-tab-pane>
                 <el-tab-pane label="已接听" name="third">角色管理</el-tab-pane>
               </el-tabs>
             </el-col>
@@ -77,7 +82,7 @@
           <div class="monitor"></div>
         </div>
       </el-col>
-      <el-col class="right" :span="10">
+      <el-col class="right" :span="9">
         <div class="grid-content bg-purple">
           <el-row class="carNum">
             <el-col>
@@ -173,7 +178,7 @@
                 <el-option label="区域二" value="beijing"></el-option>
               </el-select>
               <el-input size="small" v-model="remark" placeholder="请输入备注原因"></el-input>
-              <el-button size="small" type="primary" @click="onSubmit">确认开闸</el-button>
+              <el-button type="primary" @click="onSubmit">确认开闸</el-button>
             </el-col>
           </el-row>
         </div>
@@ -196,7 +201,6 @@ export default {
       rules: {
         carNum: [{ required: true }]
       },
-
       cutoffReason: "",
       remark: "",
       detailFlag: false
@@ -274,7 +278,7 @@ $mainWdth: 100%;
             }
             .el-tabs__item {
               font-size: 12px;
-              padding: 0 14px;
+              padding: 0 28px;
             }
             .el-tab-pane {
               padding: 10px;
@@ -297,7 +301,7 @@ $mainWdth: 100%;
                 vertical-align: middle;
                 color: #fff;
                 position: relative;
-                right: -90px;
+                right: -130px;
                 top: 10px;
 
                 span:nth-child(1) {
@@ -329,7 +333,7 @@ $mainWdth: 100%;
               vertical-align: middle;
               color: #fff;
               position: relative;
-              right: -90px;
+              right: -130px;
               top: 20px;
               span:nth-child(1) {
                 font-size: 20px;
@@ -350,14 +354,16 @@ $mainWdth: 100%;
       .grid-content {
         width: 100%;
         height: 100%;
-        border: 1px solid #aaaaaa;
         .caller {
           height: 50%;
-          background: blue;
+          border: 1px solid #aaaaaa;
+          box-sizing: border-box;
         }
         .monitor {
           height: 50%;
-          background: purple;
+          border: 1px solid #aaaaaa;
+          box-sizing: border-box;
+          margin-top: 2px;
         }
       }
     }
@@ -538,6 +544,11 @@ $mainWdth: 100%;
         }
       }
     }
+  }
+}
+.el-badge{
+  .el-badge__content {
+    top: 10px;
   }
 }
 </style>

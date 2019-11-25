@@ -11,7 +11,7 @@ html,body,#app {
 .block {
     background: #fff;
     text-align: right;
-    
+    margin-top:20px ;
 }
 .el-form-item__label {
     background: #f2f3f7;
@@ -22,3 +22,7 @@ html,body,#app {
     line-height: 32px;
     font-size: 12px;
   }
+  .cell{
+      text-align: center;
+  }
+  
