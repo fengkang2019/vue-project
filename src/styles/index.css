@@ -8,6 +8,19 @@ html,body,#app {
     padding: 0;
     margin: 0;
 }
+.el-button--primary {
+    color: #FFF;
+    background-color: #3d539c;
+    border-color: #3d539c;
+    border:none;
+}
+.el-table td, .el-table th.is-leaf {
+    text-align: center;
+    color:#000
+}
+.el-dialog__header{
+    font-weight:700
+}
 .block {
     background: #fff;
     text-align: right;

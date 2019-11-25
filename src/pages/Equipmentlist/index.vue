@@ -220,7 +220,7 @@ export default {
       //1 正常 2故障 3报废
       status: "0",
       msg: "",
-      currentData: {},
+      currentData: {}
     };
   },
   methods: {
@@ -258,7 +258,7 @@ export default {
     //点击单选 设备状态
     changeStatus(status) {
       this.form.status = status;
-      this.tableData =[];
+      this.tableData = [];
       this.search(this.form);
     },
     //改变每页数量
@@ -321,7 +321,7 @@ export default {
     },
     //查询
     search(form) {
-      this.initStatus =this.status;
+      this.initStatus = this.status;
       let that = this;
       const reqData = {
         current: this.form.current,
