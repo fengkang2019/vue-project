@@ -64,8 +64,8 @@ export default {
     color: orange;
   }
 }
-.el-button {
-  background: #3e549d;
-  color: #fff;
-}
+// .el-button {
+//   background: #3e549d;
+//   color: #fff;
+// }
 </style>

@@ -46,9 +46,10 @@ export default {
       width: 100%;
     }
   }
-}
-.el-button {
+  .el-button {
   background: #3e549d;
   color: #fff;
 }
+}
+
 </style>
