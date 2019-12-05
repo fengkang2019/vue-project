@@ -116,9 +116,9 @@
         <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
         <el-table-column fixed prop="devVer" label="版本号"></el-table-column>
-        <el-table-column :formatter="formatter(row.addTime)" fixed prop="addTime" label="添加时间"></el-table-column>
+        <el-table-column :formatter="formatter" fixed prop="addTime" label="添加时间"></el-table-column>
         <el-table-column fixed prop="devIp" label="ip地址"></el-table-column>
-        <el-table-column :formatter="formatter(row.activeDate)" fixed prop="activeDate" label="启用时间"></el-table-column>
+        <el-table-column :formatter="formatter2" fixed prop="activeDate" label="启用时间"></el-table-column>
         <el-table-column key="1" v-if="form.status=='2'" :formatter="formatter3"  fixed prop="heartTime" label="报废日期"></el-table-column>
         <el-table-column key="2" v-if="form.status=='2'" fixed prop="timeBetween" label="使用时长"></el-table-column>
         <el-table-column
@@ -227,7 +227,6 @@ export default {
     searchList: function(form) {
       this.form.startTime = form.timerange[0];
       this.form.endTime = form.timerange[1];
-      this.form.current =1;
       this.search(form);
     },
     //点击新增
@@ -330,6 +329,8 @@ export default {
           if (res) {
             const { records, current, size, total } = res.data;
             this.form.total = total;
+            // this.form.size = size;
+            // this.form.current = current;
             that.tableData=[];
             records.map((item, index) => {
               item.index = index + 1;
@@ -345,15 +346,14 @@ export default {
         return false;
       }
     },
-    formatter(val) {
-      console.log(val)
-      let moment = this.$moment(val, "YYYYMMDDHHmmss");
+    formatter(row) {
+      let moment = this.$moment(row.addTime, "YYYYMMDDHHmmss");
       return moment.format("YYYY-MM-DD HH:mm:ss");
     },
-    // formatter2(row) {
-    //   let moment = this.$moment(row.activeDate, "YYYYMMDD");
-    //   return moment.format("YYYY-MM-DD");
-    // },
+    formatter2(row) {
+      let moment = this.$moment(row.activeDate, "YYYYMMDD");
+      return moment.format("YYYY-MM-DD");
+    },
     formatter3(row){
        let moment = this.$moment(row.heartTime, "YYYYMMDDHHmmss");
       return moment.format("YYYY-MM-DD HH:mm:ss");
