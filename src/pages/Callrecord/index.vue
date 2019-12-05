@@ -1,5 +1,5 @@
 <template>
-  <div class="call">
+  <div id="call">
     <el-form label-position="center" ref="form" :model="form" class="form">
       <el-row>
         <el-col :span="20">
@@ -85,8 +85,10 @@
                 clearable
                 size="small"
               >
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option :value="0" label="等待处理"></el-option>
+                <el-option :value="1" label="未处理"></el-option>
+                <el-option :value="2" label="处理中"></el-option>
+                <el-option :value="3" label="已处理"></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -101,8 +103,8 @@
                 clearable
                 size="small"
               >
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option value="1" label="按鍵呼叫"></el-option>
+                <el-option value="2" label="自動呼叫"></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -126,18 +128,50 @@
     </el-form>
     <el-row v-if="value==2" class="downRow" type="flex" justify="space-between">
       <el-col style="width:49.5%">
-        <Pie chartId="Pie1" height="100%" width="100%" text="接听状态分析" />
+        <Pie
+          chartId="Pie1"
+          height="100%"
+          width="100%"
+          text="接听状态分析"
+          :pieDatas="pieDatas1"
+          :n="pieDatas1[0].value"
+          txt="未接听次数"
+        />
       </el-col>
       <el-col style="width:49.5%">
-        <Pie chartId="Pie2" height="100%" width="100%" text="呼叫类型分析" />
+        <Pie
+          chartId="Pie2"
+          height="100%"
+          width="100%"
+          text="呼叫类型分析"
+          :pieDatas="pieDatas2"
+          :n="pieDatas2[0].value"
+          txt="按键呼叫"
+        />
       </el-col>
     </el-row>
     <el-row v-if="value==2" class="downRow" type="flex" justify="space-between">
       <el-col style="width:49.5%">
-        <Pie chartId="Pie3" height="100%" width="100%" text="接听等待时长分析" />
+        <Pie
+          chartId="Pie3"
+          height="100%"
+          width="100%"
+          text="接听等待时长分析"
+          :pieDatas="pieDatas3"
+          :n="pieDatas3[0].value"
+          txt="30s~60s"
+        />
       </el-col>
       <el-col style="width:49.5%">
-        <Pie chartId="Pie4" height="100%" width="100%" text="任务处理时长分析" />
+        <Pie
+          chartId="Pie4"
+          height="100%"
+          width="100%"
+          text="任务处理时长分析"
+          :pieDatas="pieDatas4"
+          :n="pieDatas4[1].value"
+          txt="1~2分钟"
+        />
       </el-col>
     </el-row>
     <el-row v-if="value==2" class="downRow">
@@ -152,17 +186,17 @@
         style="width: 100%"
         :fit="true"
       >
-        <el-table-column fixed prop="index" label="序号"></el-table-column>
+        <el-table-column width="60" fixed prop="index" label="序号"></el-table-column>
         <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
         <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
         <el-table-column fixed prop="type" label="呼叫类型"></el-table-column>
-        <el-table-column fixed prop="callTime" label="呼入时间"></el-table-column>
-        <el-table-column fixed prop="status" label="接听状态"></el-table-column>
-        <el-table-column fixed prop="awaitTime" label="接听等待时长"></el-table-column>
+        <el-table-column :formatter="formatter" fixed prop="callTime" label="呼入时间"></el-table-column>
+        <el-table-column :formatter="formatter3" fixed prop="status" label="接听状态"></el-table-column>
+        <el-table-column fixed prop="waitTime" label="接听等待时长"></el-table-column>
         <el-table-column fixed prop="userNo" label="当班客服"></el-table-column>
-        <el-table-column fixed prop="handleTime" label="处理时间"></el-table-column>
-        <el-table-column fixed prop="handleDuration" label="处理时长"></el-table-column>
+        <el-table-column :formatter="formatter2" fixed prop="startTime" label="处理时间"></el-table-column>
+        <el-table-column fixed prop="processTime" label="处理时长"></el-table-column>
         <el-table-column fixed prop="remark" label="未接听原因"></el-table-column>
       </el-table>
       <div class="block">
@@ -183,7 +217,8 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
+import store from "../../store";
 import Pie from "@/components/echarts/Pie.vue";
 import Bar from "@/components/echarts/Bar.vue";
 import { chooseDate } from "@/utils";
@@ -214,7 +249,27 @@ export default {
           return time.getTime() > Date.now();
         }
       },
-      tableData: []
+      tableData: [],
+      pieDatas1: [{ value: 0, name: "未接听" }, { value: 0, name: "已接听" }],
+
+      pieDatas2: [
+        { value: 0, name: "按键呼叫" },
+        { value: 0, name: "自动呼叫" }
+      ],
+      pieDatas3: [
+        { value: 0, name: "0~30s" },
+        { value: 0, name: "30~60s" },
+        { value: 0, name: "1分钟~2分钟" },
+        { value: 0, name: "2分钟~4分钟" },
+        { value: 0, name: "4分钟以上" }
+      ],
+      pieDatas4: [
+        { value: 0, name: "0~30s" },
+        { value: 0, name: "30~60s" },
+        { value: 0, name: "1分钟~2分钟" },
+        { value: 0, name: "2分钟~4分钟" },
+        { value: 0, name: "4分钟以上" }
+      ]
     };
   },
   methods: {
@@ -224,6 +279,7 @@ export default {
     onSubmit: function(form) {
       this.form.startTime = form.timerange[0];
       this.form.endTime = form.timerange[1];
+      this.form.current = 1;
       this.searchRecord();
     },
     changeTime(value) {},
@@ -233,10 +289,12 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.size = val;
+      this.searchRecord();
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.current = val;
+      this.searchRecord();
     },
     //点击导出
     exportToExcel() {
@@ -266,10 +324,10 @@ export default {
           "type",
           "callTime",
           "status",
-          "awaitTime",
+          "waitTime",
           "service",
-          "handleTime",
-          "handleDuration",
+          "startTime",
+          "processTime",
           "remark"
         ];
         const list = this.tableData;
@@ -284,7 +342,7 @@ export default {
       const that = this;
       const reqData = {
         current: this.form.current,
-        size: this.form.current,
+        size: this.form.size,
         startTime: this.form.startTime,
         endTime: this.form.endTime,
         parkCode: this.form.parkCode,
@@ -293,37 +351,121 @@ export default {
         type: this.form.type,
         userNo: this.form.userNo
       };
+      this.reWriteDatas();
+      console.log(reqData);
       this.$axios.post("/pagerSelect/searchRecord", reqData).then(res => {
         if (res) {
           const { records, size, current, total } = res.data;
+          that.tableData = [];
+          // this.form.size = size;
+          this.form.current = current;
+          this.total = total;
+
           records.map((item, index) => {
             item.index = index + 1;
             that.$set(that.tableData, index, item);
           });
-          this.form.size = size;
-          this.form.current = current;
-          this.total = total;
         } else {
           return false;
         }
       });
+    },
+    formatter(row) {
+      //  20191121145659
+      let moment = this.$moment(row.callTime, "YYYYMMDDHHmmss");
+      return moment.format("YYYY-MM-DD HH:mm:ss");
+    },
+    formatter2(row) {
+      let moment = this.$moment(row.startTime, "YYYYMMDDHHmmss");
+      return moment.format("YYYY-MM-DD HH:mm:ss");
+    },
+    formatter3(row) {
+      if (row.status == 0) {
+        return "未处理";
+      } else if (row.status == 1) {
+        return "处理中";
+      } else if (row.status == 2) {
+        return "已处理";
+      }
+    },
+    //充值echarts图表数据
+    reWriteDatas() {
+      if (this.pieDatas1) {
+       this.pieDatas1.forEach(element => {
+          element.value = 0;
+        });
+      }
+      if (this.pieDatas2) {
+        this.pieDatas2.forEach(element => {
+          element.value = 0;
+        });
+      }
+      if (this.pieDatas3) {
+        this.pieDatas3.forEach(element => {
+          element.value = 0;
+        });
+      }
+      if (this.pieDatas4) {
+        this.pieDatas4.forEach(element => {
+          element.value = 0;
+        });
+      }
     }
   },
   computed: {
     ...mapState(["data"])
+  },
+  watch: {
+    tableData: function(val) {
+      
+      val.map((item, i) => {
+        if (item.status == 2) {
+          this.pieDatas1[1].value += 1;
+        } else if (item.status < 2) {
+          this.pieDatas1[0].value += 1;
+        }
+        if (item.type == 1) {
+          this.pieDatas2[0].value += 1;
+        } else {
+          this.pieDatas2[1].value += 1;
+        }
+        if (item.waitTime <= 30) {
+          this.pieDatas3[0].value += 1;
+        } else if (item.waitTime <= 60) {
+          this.pieDatas3[1].value += 1;
+        } else if (item.waitTime <= 120) {
+          this.pieDatas3[2].value += 1;
+        } else if (item.waitTime <= 240) {
+          this.pieDatas3[3].value += 1;
+        } else {
+          this.pieDatas3[4].value += 1;
+        }
+        if (item.processTime <= 30) {
+          this.pieDatas4[0].value += 1;
+        } else if (item.processTime <= 60) {
+          this.pieDatas4[1].value += 1;
+        } else if (item.processTime <= 120) {
+          this.pieDatas4[2].value += 1;
+        } else if (item.processTime <= 240) {
+          this.pieDatas4[3].value += 1;
+        } else {
+          this.pieDatas4[4].value += 1;
+        }
+      });
+    }
   }
 };
 </script>
 
 <style lang="scss" >
-.call {
+#call {
   height: 100%;
   .downRow {
     margin-top: 10px;
     background: #f2f3f7;
     .el-col {
       background: #fff;
-      height: 152px;
+      height: 250px;
     }
   }
   .downRow2 {

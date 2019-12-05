@@ -1,156 +1,327 @@
 
 <template>
-  <div>
+  <div id="service">
     <div class="searchForm">
-      <el-form size="small" :inline="true" :model="formInline">
+      <el-form size="small" :inline="true" :model="form">
         <el-form-item label="停车场：">
-          <el-select v-model="value" placeholder="请选择停车场">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-          </el-select>
+          <el-select v-model="form.parkCode" placeholder="请选择停车场" @change="chooseParkCode(form)"></el-select>
         </el-form-item>
         <el-form-item label="客服姓名：">
-          <el-input v-model="input" placeholder="请输入客服姓名"></el-input>
+          <el-input v-model="form.name" placeholder="请输入客服姓名"></el-input>
         </el-form-item>
-        <el-button size="small" type="primary" @click="onSubmit" class="btn">查询</el-button>
-        <el-button size="small" type="primary" @click="addService" class="fr btn">
+        <el-button size="small" type="primary" @click="onSubmit(form)" class="btn">查询</el-button>
+        <el-button size="small" type="primary" @click="openAdd(form)" class="fr btn">
           <i class="el-icon-plus"></i>新增
         </el-button>
       </el-form>
     </div>
     <div class="tableInfo">
-      <el-table :data="tableData" stripe style="width: 100%" border>
-        <el-table-column prop="no" label="序号" width="80">
-          <template slot-scope="scope">
-            <span>{{ scope.$index + 1 }}</span>
-          </template>
+      <el-table
+        :data="tableData.slice((form.current-1)*form.size,form.current*form.size)"
+        stripe
+        style="width: 100%"
+        border
+      >
+        <el-table-column prop="index" label="序号" width="80">
         </el-table-column>
         <el-table-column prop="name" label="姓名"></el-table-column>
-        <el-table-column prop="acount" label="账号"></el-table-column>
-        <el-table-column prop="tel" label="电话"></el-table-column>
-        <el-table-column prop="gender" label="性别"></el-table-column>
+        <el-table-column prop="opername" label="账号"></el-table-column>
+        <el-table-column prop="mobile" label="电话"></el-table-column>
+        <el-table-column prop="gender" label="性别" :formatter="formatter"></el-table-column>
         <el-table-column prop="permission" label="权限"></el-table-column>
-        <el-table-column prop="permiPark" label="授权停车场">
+        <el-table-column prop="groupNames" label="授权停车场">
           <template slot-scope="scope">
-            <el-button type="text" size="small">{{scope.row.permiPark}}</el-button>
+            <el-button
+              type="text"
+              @click="openAuthInfo(scope.row)"
+              size="small"
+            >{{scope.row.groupNames[0]?scope.row.groupNames[0].name:""}}</el-button>
           </template>
         </el-table-column>
         <el-table-column width="350" prop="option" label="操作">
-          <template>
-            <el-button type="text" size="small" @click="openDetail">详情</el-button>
-            <el-button type="text" size="small">编辑</el-button>
-            <el-button type="text" size="small">禁用</el-button>
-            <el-button type="text" size="small">修改密码</el-button>
-            <el-button type="text" size="small">删除</el-button>
-            <el-button type="text" size="small">授权停车场</el-button>
+          <template slot-scope="scope">
+            <el-button type="text" size="small" @click="openDetail(scope.row)">详情</el-button>
+            <el-button type="text" size="small" @click="openEdit(scope.row)">编辑</el-button>
+            <el-button type="text" size="small" @click="openDisable(scope.row)">禁用</el-button>
+            <el-button type="text" size="small" @click="openChangePwd(scope.row)">修改密码</el-button>
+            <!-- <el-button type="text" size="small" @click="openDelete(scope.row)">删除</el-button> -->
+            <el-button type="text" size="small" @click="openAuthorization(scope.row,form)">授权停车场</el-button>
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        class="fr marginTop"
-        background
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="form.current"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="form.size"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="form.total"
-      ></el-pagination>
+      <div class="block">
+        <span class="demonstration"></span>
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page.sync="form.current"
+          :page-sizes="[2, 3, 5, 10]"
+          :page-size="form.size"
+          layout="total, prev, pager, next, sizes, jumper"
+          :total="form.total"
+          background
+        ></el-pagination>
+      </div>
     </div>
 
-    <Detail :visible1="visible1" />
+    <Detail :visible1="visible1" :type="type" :currentData="currentData" :form="form" />
+    <ChangeState :visible2="visible2" :type2="type2" :text="text" :currentData="currentData" />
+    <ChangePwd :visible3="visible3" :currentData="currentData" />
+    <Auth
+      :visible4="visible4"
+      :form="form"
+      :groups="groups"
+      :userNo="userNo"
+      :groupsRight="groupsRight"
+    />
+    <DialogTable :visible5="visible5" :groupNames="groupNames" />
   </div>
 </template>
 
 <script>
-import Detail from "./detail.vue";
-
+import { baseJavaUrlG } from "@/utils/api";
+import Detail from "./Detail";
+import ChangeState from "./ChangeState";
+import ChangePwd from "./ChangePwd";
+import Auth from "./Auth";
+import DialogTable from "./DialogTable";
+import { acctOperAddOperator } from "@/request/account/AddAccount";
+import { acctSetCustPwd } from "@/request/account/EditAccount";
+import md5 from "js-md5";
+import { mapState } from "vuex";
+import { saveUserLogin } from "@/utils";
 export default {
-  components: { Detail },
+  components: { Detail, ChangeState, ChangePwd, Auth, DialogTable },
   data() {
     return {
-      formInline: {
-        user: "",
-        region: "",
-        current:1,
-        size:10,
-        total:20,
-      },
-      input: "",
-      options: [
-        {
-          value: "选项1",
-          label: "停车场1"
-        },
-        {
-          value: "选项2",
-          label: "停车场2"
-        }
-      ],
-      switchValue: true,
-      value: "",
-      tableData: [
-        {
-          name: "王小虎",
-          gender: "男",
-          acount: "是谁的小刚",
-          tel: "156230032222",
-          permission: "二级",
-          permiPark: "万达停车场"
-        }
-      ],
-     
       form: {
+        parkCode: "",
         name: "",
-        region: "",
-        date1: "",
-        date2: "",
-        delivery: false,
-        type: [],
-        resource: "",
-        desc: ""
+        current: 1,
+        size: 10,
+        total: 0
       },
+      tableData: [],
       formLabelWidth: "120px",
-      visible1: false
+      visible1: false,
+      // 0新增 1 编辑 2详情
+      type: 0,
+      currentData: {},
+
+      visible2: false,
+      //启用 0 禁用1 删除2
+      type2: 0,
+      text: "",
+      visible3: false,
+
+      visible4: false,
+      // 可分配 组
+      groups: [],
+      groupsRight: [],
+
+      visible5: false,
+      groupNames: [],
+      userNo: ""
     };
   },
   methods: {
-    onSubmit() {
-      console.log("submit!");
+    //选择停车场
+    chooseParkCode(form) {
+      console.log(111);
+      const reqData = form.parkCode;
     },
-    add() {
-      console.log("add!");
+    //查找
+    onSubmit(form) {
+      console.log(form);
+      this.form.current =1;
+      this.search(form);
     },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
+      this.form.size = val;
+      this.search(this.form);
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
+      this.form.current = val;
+      this.search(this.form);
     },
-    addService(){
-      console.log('xinzneg ')
+    //打开组 列表
+    openAuthInfo(row) {
+      console.log(row);
+      this.groupNames = row.groupNames;
+      this.visible5 = true;
     },
-    openDetail(){
-      console.log('详情')
+    //新增
+    openAdd(form) {
+      this.type = 0;
+      this.currentData = {};
+
+      this.visible1 = true;
+    },
+    //编辑
+    openEdit(row) {
+      this.type = 1;
+      this.currentData = row;
+      this.visible1 = true;
+    },
+    //详情
+    openDetail(val) {
+      console.log(val);
+      this.type = 2;
+      this.currentData = val;
+      this.visible1 = true;
+    },
+    //禁用
+    openDisable(row) {
+      this.type2 = 1;
+      this.text = "确定禁用该账号吗?";
+      this.currentData = row;
+      this.visible2 = true;
+    },
+    //修改密码
+    openChangePwd(row) {
+      console.log(row);
+      this.currentData = row;
+      this.visible3 = true;
+    },
+    //确认修改密码
+    updatePwd(form) {
+      const reqData = {
+        cust_id: this.currentData.custId,
+        new_pwd: md5(form.pwd),
+        confirmPassword: md5(form.pwd2),
+        pwd_type: 1
+      };
+
+      console.log(reqData);
+      acctSetCustPwd(
+        reqData,
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          this.$message.success("修改密码成功");
+        } else if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == "-42000002") {
+          this.$message.error(res.data.ANSWERS[0].ANS_MSG_HDR.MSG_TEXT);
+          this.$router.push({ name: "login" });
+        } else {
+          this.$message.error("修改密码失败");
+        }
+      });
+    },
+
+    //删除
+    // openDelete(row) {
+    //   this.type2 = 2;
+    //   this.text = "确定删除该账号吗?";
+    //   this.currentData = row;
+    //   this.visible2 = true;
+    // },
+    //授权
+    openAuthorization(row, form) {
+      this.userNo = row.custId;
+      this.groupsRight = row.groupNames;
+      this.visible4 = true;
+    },
+    //关闭弹框
+    closeDialog() {
+      this.visible1 = false;
+      this.visible2 = false;
+      this.visible3 = false;
+      this.visible4 = false;
+      this.visible5 = false;
+    },
+    search(form) {
+      let that = this;
+      const reqData = {
+        parkCode: form.parkCode,
+        name: form.name,
+        size: form.size,
+        current: form.current
+      };
+      this.$axios.post("pagerSelect/searchLoginInfo", reqData).then(res => {
+        if (res) {
+          const { records, current, size, total } = res.data;
+          this.form.total = total;
+          this.form.size = size;
+          this.form.current = current;
+          records.map((item, index) => {
+            item.index = index + 1;
+            that.$set(that.tableData, index, item);
+          });
+        } else {
+          return false;
+        }
+      });
+    },
+    //禁用
+    disableAccount(currentData) {
+      let num = "1";
+      const custId = currentData.custId;
+      this.$axios.post(
+        baseJavaUrlG +
+          "/tAcctCustInfo/changeState?custId=" +
+          custId +
+          "&num=" +
+          num
+      );
+    },
+    formatter(row) {
+      if (row.gender == 1) {
+        return "男";
+      } else {
+        return "女";
+      }
+    },
+    //查询所有组信息
+    searchGroups() {
+      this.$axios.post("/pagerSelect/searchParkGroup", {}).then(res => {
+        console.log(res.data);
+        if (res) {
+          this.groups = res.data;
+        }
+      });
     }
+  },
+  beforeMounted() {},
+  mounted() {
+    //查询客服信息
+    // this.$axios
+    //   .post("/pagerSelect/searchParkUser", { parkCode: "" })
+    //   .then(res => {
+    //     if (res) {
+    //       console.log(res.data[0].custId);
+    //       this.form.name = res.data[0].custId;
+    //     } else {
+    //       return false;
+    //     }
+    //   });
+    saveUserLogin(this);
+    this.searchGroups();
+  },
+  computed: {
+    ...mapState(["userLogin"])
   }
 };
 </script>
 <style lang="scss">
-.fr {
-  float: right;
+#service {
+  .el-form {
+    .btn {
+      margin-top: 5px;
+    }
+  }
 }
+
 .searchForm {
   padding: 20px 10px 0 10px;
   background: #fff;
 }
 .tableInfo {
   margin-top: 20px;
+  padding: 10px;
+  background: #fff;
 }
 .marginTop {
   margin-top: 10px;
@@ -167,5 +338,10 @@ export default {
 }
 .btn {
   background: #3e549d;
+}
+#service {
+  .el-form-item__content {
+    line-height: 40px;
+  }
 }
 </style>

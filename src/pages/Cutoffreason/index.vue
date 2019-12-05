@@ -1,5 +1,5 @@
 <template>
-  <div class="cutoffreason">
+  <div id="cutoffreason">
     <el-form label-position="center" ref="form" :model="form" class="form">
       <el-row >
         <el-col :span="20">
@@ -273,7 +273,7 @@ export default {
 </script>
 
 <style lang="scss">
-.cutoffreason {
+#cutoffreason {
   width: 100%;
   height: 100%;
 
@@ -291,9 +291,6 @@ export default {
     margin-top: 10px;
     padding: 10px;
     background: #fff;
-    .el-col {
-      // height: 235px;
-    }
   }
 }
 .export {

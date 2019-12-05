@@ -33,6 +33,26 @@ export function chooseDate(date, value) {
         ];
     }
     return value
+};
+//将秒转化为 天 时 分
+
+//保存 vuex数据页面刷新时不销毁
+export function saveUserLogin(that) {
+    if (sessionStorage.getItem("store")) {
+        that.$store.replaceState(
+          Object.assign(
+            {},
+            that.$store.state,
+            JSON.parse(sessionStorage.getItem("store"))
+          )
+        );
+        sessionStorage.removeItem("store");
+      }
+
+      // //在页面刷新时将vuex里的信息保存到sessionStorage里
+      window.addEventListener("beforeunload", () => {
+        sessionStorage.setItem("store", JSON.stringify(that.$store.state));
+      });
 }
-// 时间 格式 化
+
 

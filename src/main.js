@@ -5,7 +5,7 @@ import App from './App'
 
 import router from './router'
 import store from "./store";
-
+import $ from "jquery"
 //时间处理
 import moment from 'moment'
 Vue.prototype.$moment = moment
@@ -20,6 +20,13 @@ import "./styles/index.css"
 import "@/utils/elementUi.js"
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
+
+//引入所有过滤器
+import * as filters from "@/utils/filters"
+Object.keys(filters).forEach(key=>{
+  Vue.filter(key,filters[key])
+})
+
 
 //echarts 表格
 import echarts from 'echarts'
@@ -38,6 +45,9 @@ Vue.prototype.$axios = axios;
 import ImageViewer from "vue2-viewer";
 Vue.use(ImageViewer)
 
+var dhweb;
+dhweb =new DHAlarmWeb();
+Vue.prototype.$dhweb = dhweb;
 
 console.log("vue 项目启动的 main.js dpr ==" + window.devicePixelRatio)
 
@@ -47,6 +57,5 @@ Vue.config.productionTip = false
 new Vue({
   router,
   store,
-  components: { App },
-  template: '<App/>'
+  render: h => h(App)
 }).$mount("#app")

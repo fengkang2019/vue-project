@@ -3,8 +3,9 @@ const path = require('path')
 const utils = require('./utils')
 const config = require('../config')
 const vueLoaderConfig = require('./vue-loader.conf')
+var webpack = require('webpack')
 
-function resolve (dir) {
+function resolve(dir) {
   return path.join(__dirname, '..', dir)
 }
 
@@ -40,6 +41,20 @@ module.exports = {
         test: /\.scss$/,
         loaders: ['style', 'css', 'sass']
       },
+      // {
+      //   test: /\.css$/,
+      //   use: [
+      //     {
+      //       loader: "style-loader",
+      //     },
+      //     {
+      //       loader: "css-loader",
+      //       option: {
+      //         minimize: true,
+      //       }
+      //     }
+      //   ]
+      // },
       {
         test: /\.js$/,
         loader: 'babel-loader',
@@ -82,5 +97,11 @@ module.exports = {
     net: 'empty',
     tls: 'empty',
     child_process: 'empty'
-  }
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      JQuery: "jquery"
+    })
+  ]
 }

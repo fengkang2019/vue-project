@@ -1,38 +1,56 @@
 
 import axios from "@/utils/axios";
-import { COMMON_CONSTANT, isProduct_ENV } from '../../static/Constant'
+
 
 let kesbapi = '';
 
 //设置kesb路径in
 let kesbURL = '';
-let kesbJavaURL = '';
-let baseJavaUrl = '';
-const BASE_URL = COMMON_CONSTANT.BASE_URL
 
-if (isProduct_ENV) {
+let kesbJavaURL = '';
+
+let baseJavaUrl = '';
+
+let baseJavaUrlG = '';
+
+let enterpriseURL = ''
+
+
+let agentTreeURL = ''
+
+// const BASE_URL = COMMON_CONSTANT.BASE_URL;
+const BASE_URL =process.env.baseURl;
+
+const CommonUrl =process.env.serverUrlPark ;
+
+
     kesbapi = BASE_URL + '/kesb/api/';
     //设置kesb路劲in
     kesbURL = axios.create({
         baseURL: BASE_URL + '/kesb_req'
     });
     kesbJavaURL = axios.create({
-        baseURL: COMMON_CONSTANT.baseJavaUrl
-    });
-    baseJavaUrl = BASE_URL + '/fly-park'
-} else {
-    //设置kesb路径in
-    kesbURL = axios.create({
-        baseURL: BASE_URL + '/kesb_req'
-    });
-    kesbJavaURL = axios.create({
         baseURL: BASE_URL
     });
-    baseJavaUrl = BASE_URL;
-}
+
+    enterpriseURL = axios.create({
+		baseURL: CommonUrl + "/kesb/api"
+	});
+
+    agentTreeURL = axios.create({
+		baseURL: CommonUrl + "/kesb/api/ent/tree"
+	});
+
+    baseJavaUrl = BASE_URL + '/fly-park';
+
+    baseJavaUrlG = CommonUrl + "/cloud-park";
+
 export {
     kesbapi,
     kesbURL,
     baseJavaUrl,
     kesbJavaURL,
+    baseJavaUrlG,
+    enterpriseURL,
+    agentTreeURL
 }

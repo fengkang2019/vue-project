@@ -10,21 +10,26 @@
         <div class="grid-content bg-purple">
           <p>欢迎登陆运维平台</p>
           <el-form :model="login" :rules="rules" ref="logForm">
-            <el-form-item prop="username">
+            <el-form-item prop="usr_code">
               <el-input
                 placeholder="请输入用户名"
                 prefix-icon="el-icon-user-solid"
-                v-model="login.username"
+                v-model="login.usr_code"
               ></el-input>
             </el-form-item>
-            <el-form-item prop="password">
-              <el-input placeholder="密码" prefix-icon="el-icon-lock" v-model="login.password"></el-input>
+            <el-form-item prop="trade_pwd">
+              <el-input
+                placeholder="密码"
+                type="password"
+                prefix-icon="el-icon-lock"
+                v-model="login.trade_pwd"
+              ></el-input>
             </el-form-item>
             <el-form-item class="check">
               <el-checkbox v-model="checked">记住用户名密码</el-checkbox>
             </el-form-item>
             <el-form-item>
-              <el-button :round="round" type="primary" @click="onSubmit">登陆</el-button>
+              <el-button :round="round" type="primary" @click="onSubmit(login)">登陆</el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -34,33 +39,144 @@
 </template>
 
 <script>
+import { acctCustLogin } from "@/request/account/AccountLogin";
+import { acctQueryOperatorByName } from "@/request/account/AccountQueryOpratorByName";
+import {
+  queryEnterpriseByAccountId,
+  queryNewEnterpriseByAccountId
+} from "@/request/account/QueryEnterpriseByAccountId";
+import md5 from "js-md5";
+import { mapMutations, mapState } from "vuex";
+import { baseJavaUrlG } from "@/utils/api";
+import { saveUserLogin } from "@/utils";
 export default {
   data() {
     return {
       login: {
-        username: "",
-        password: ""
+        usr_code: "",
+        trade_pwd: ""
       },
       rules: {
-        username: [
+        usr_code: [
           { required: true, message: "请输入用户名", trigger: "blur" }
         ],
-        password: [{ required: true, message: "请输入密码", trigger: "blur" }]
+        trade_pwd: [{ required: true, message: "请输入密码", trigger: "blur" }]
       },
       round: false,
-      checked: false
+      checked: false,
+      userLogin: {}
     };
   },
   methods: {
     onSubmit: function(login) {
+      const that = this;
       this.$refs.logForm.validate(valid => {
         if (valid) {
-          console.log(this.login, "登录");
+          if (this.checked) {
+            sessionStorage.setItem(
+              "account",
+              JSON.stringify({
+                user: login.usr_code,
+                trade_pwd: login.trade_pwd
+              })
+            );
+          }
+          const reqData = {
+            login_from_type: "51",
+            usr_code: login.usr_code,
+            trade_pwd: md5(md5(login.trade_pwd) + 12345678)
+          };
+          acctCustLogin(reqData, "0", "").then(res => {
+            console.log(res);
+            if (typeof res != "object") {
+              this.$message.error(res);
+              return false;
+            } else {
+              this.$axios
+                .all([
+                  this.myQueryEnterpriseByAccountId(res[0]),
+                  this.myNewQueryEnterpriseByAccountId(res[0]),
+                  this.userAssignRequest(res[0])
+                ])
+                .then(
+                  this.$axios.spread(function(acct, agentTree, role) {
+                    console.log(acct, agentTree, role);
+                  })
+                );
+
+              // that.$axios
+              //   .get(
+              //     baseJavaUrlG +
+              //       "/t-trade-write-off/getToken?custId=" +
+              //       res[0].cust_id
+              //   )
+              //   .then(res => {
+              //     console.log(res);
+              //   });
+              this.userLogin = res[0];
+              this.$store.commit("savaUserLogin", this.userLogin);
+              if (this.$store.state.route) {
+                this.$router.push({ name: this.$store.state.route });
+              } else {
+                this.$router.push({ name: "longcutoff" });
+              }
+            }
+          });
         } else {
           return false;
         }
       });
+    },
+    myQueryEnterpriseByAccountId(param) {
+      let ansCommData = param;
+      var reqData = {
+        cust_parent_id: ansCommData.ent_cust_id,
+        isself: "1",
+        park: "1",
+        maxid: "0",
+        maxcount: "10000"
+      };
+      return queryEnterpriseByAccountId(
+        reqData,
+        ansCommData.cust_id,
+        ansCommData.session
+      );
+    },
+    myNewQueryEnterpriseByAccountId(param) {
+      let ansCommData = param;
+      var reqData = {
+        cust_parent_id: ansCommData.ent_cust_id,
+        isself: true
+      };
+      return queryNewEnterpriseByAccountId(
+        reqData,
+        ansCommData.cust_id,
+        ansCommData.session
+      );
+    },
+    userAssignRequest(data) {
+      let custId = data.cust_id;
+      let session = data.session;
+      let userCode = data.name;
+      //Need to save the userCode in the Redux
+      let reqData = {
+        usr_code: userCode //操作员名
+      };
+      return acctQueryOperatorByName(reqData, custId, session);
     }
+  },
+
+  mounted() {
+    if (sessionStorage.getItem("account")) {
+      this.login.usr_code = JSON.parse(sessionStorage.getItem("account")).user;
+      this.login.trade_pwd = JSON.parse(
+        sessionStorage.getItem("account")
+      ).trade_pwd;
+    }
+    saveUserLogin(this);
+  },
+  computed: {
+    ...mapState(["route"])
   }
 };
 </script>

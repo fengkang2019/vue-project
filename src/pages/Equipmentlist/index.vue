@@ -1,5 +1,5 @@
 <template>
-  <div class="list">
+  <div id="list">
     <el-form ref="form" :model="form" class="form">
       <el-row>
         <el-col :span="7">
@@ -104,7 +104,7 @@
         </el-col>
       </el-row>
     </el-form>
-    <el-row class="tableRow" :stripe="true">
+    <el-row class="tableElRow" :stripe="true">
       <el-table
         :data="tableData.slice((form.current-1)*form.size,form.current*form.size)"
         border
@@ -116,10 +116,10 @@
         <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
         <el-table-column fixed prop="devVer" label="版本号"></el-table-column>
-        <el-table-column fixed prop="addTime" label="添加时间"></el-table-column>
+        <el-table-column :formatter="formatter(row.addTime)" fixed prop="addTime" label="添加时间"></el-table-column>
         <el-table-column fixed prop="devIp" label="ip地址"></el-table-column>
-        <el-table-column fixed prop="activeDate" label="启用时间"></el-table-column>
-        <el-table-column key="1" v-if="form.status=='2'" fixed prop="heartTime" label="报废日期"></el-table-column>
+        <el-table-column :formatter="formatter(row.activeDate)" fixed prop="activeDate" label="启用时间"></el-table-column>
+        <el-table-column key="1" v-if="form.status=='2'" :formatter="formatter3"  fixed prop="heartTime" label="报废日期"></el-table-column>
         <el-table-column key="2" v-if="form.status=='2'" fixed prop="timeBetween" label="使用时长"></el-table-column>
         <el-table-column
           key="3"
@@ -135,7 +135,7 @@
           <template slot-scope="scope">
             <el-button
               v-if="form.status=='0'"
-              @click="handleClick1(scope.row)"
+              @click="handleClick1(scope.row,scope.$index)"
               type="text"
               size="small"
             >故障</el-button>
@@ -147,7 +147,7 @@
             >修改</el-button>
             <el-button
               v-if="form.status=='1'"
-              @click="handleClick0(scope.row)"
+              @click="handleClick0(scope.row,scope.$index)"
               type="text"
               size="small"
             >正常</el-button>
@@ -160,7 +160,7 @@
             <el-button
               v-if="form.status!='2'"
               type="text"
-              @click="handleClick2(scope.row)"
+              @click="handleClick2(scope.row,scope.$index)"
               size="small"
             >报废</el-button>
           </template>
@@ -225,14 +225,10 @@ export default {
   },
   methods: {
     searchList: function(form) {
-      if (form.type == "caller") {
-        this.form.startTime = form.timerange[0];
-        this.form.endTime = form.timerange[1];
-        this.search(form);
-      } else {
-        this.$message.error("暂无其他数据");
-        return false;
-      }
+      this.form.startTime = form.timerange[0];
+      this.form.endTime = form.timerange[1];
+      this.form.current =1;
+      this.search(form);
     },
     //点击新增
     addCaller: function() {
@@ -264,21 +260,20 @@ export default {
     //改变每页数量
     handleSizeChange(val) {
       this.form.size = val;
-      this.search(this.form);
+      this.search();
     },
     //改变当前页数
     handleCurrentChange(val) {
       this.form.current = val;
       this.search(this.form);
     },
-
     //点击编辑
     handleClickEdit(val) {
       this.visibleFlag = true;
       this.flag = "2";
       this.currentData = val;
     },
-    //确认编辑
+    //确认修改
     confirmEdit(val) {
       this.$axios.post("/pagerUpdate/updateDevice", val).then(res => {
         if (res) {
@@ -287,32 +282,31 @@ export default {
       });
     },
     //点击详情
-    handleClickDetails(row) {
+    handleClickDetails(row, index) {
+      console.log(index);
       this.visibleFlag = true;
       this.flag = "3";
       this.currentData = row;
     },
     //点击正常
-    handleClick0(row) {
+    handleClick0(row, index) {
       this.state = true;
       this.status = "0";
       this.msg = "你确定设备状态为正常吗?";
       row.status = this.status;
       this.currentData = row;
-      // this.confirmEdit(row);
     },
     //点击故障
-    handleClick1(row) {
+    handleClick1(row, index) {
       console.log(row);
       this.state = true;
       this.status = "1";
       row.status = this.status;
       this.currentData = row;
       this.msg = "你确定设备状态为故障吗?";
-      // this.confirmEdit(row);
     },
     //点击报废
-    handleClick2(row) {
+    handleClick2(row, index) {
       this.state = true;
       this.status = "2";
       this.msg = "你确定设备状态为报废吗?";
@@ -321,30 +315,50 @@ export default {
     },
     //查询
     search(form) {
-      this.initStatus = this.status;
-      let that = this;
-      const reqData = {
-        current: this.form.current,
-        size: this.form.size,
-        startTime: this.form.startTime,
-        endTime: this.form.endTime,
-        devNo: this.form.devNo,
-        parkCode: this.form.parkCode,
-        status: this.form.status
-      };
-      this.$axios.post("/pagerSelect/searchDevice", reqData).then(res => {
-        const { records, current, size, total } = res.data;
-        this.form.total = total;
-        this.form.size = size;
-        this.form.current = current;
-        records.map((item, index) => {
-          item.index = index + 1;
-          that.$set(that.tableData, index, item);
+      if (form.type == "caller") {
+        let that = this;
+        const reqData = {
+          current: this.form.current,
+          size: this.form.size,
+          startTime: this.form.startTime,
+          endTime: this.form.endTime,
+          devNo: this.form.devNo,
+          parkCode: this.form.parkCode,
+          status: this.form.status
+        };
+        this.$axios.post("/pagerSelect/searchDevice", reqData).then(res => {
+          if (res) {
+            const { records, current, size, total } = res.data;
+            this.form.total = total;
+            that.tableData=[];
+            records.map((item, index) => {
+              item.index = index + 1;
+              that.$set(that.tableData, index, item);
+            });
+          } else {
+            this.$message.error("暂无数据");
+            return false;
+          }
         });
-      });
+      } else {
+        this.$message.error("暂无呼叫器以外数据");
+        return false;
+      }
+    },
+    formatter(val) {
+      console.log(val)
+      let moment = this.$moment(val, "YYYYMMDDHHmmss");
+      return moment.format("YYYY-MM-DD HH:mm:ss");
+    },
+    // formatter2(row) {
+    //   let moment = this.$moment(row.activeDate, "YYYYMMDD");
+    //   return moment.format("YYYY-MM-DD");
+    // },
+    formatter3(row){
+       let moment = this.$moment(row.heartTime, "YYYYMMDDHHmmss");
+      return moment.format("YYYY-MM-DD HH:mm:ss");
     }
-  },
-  mounted() {}
+  }
 };
 </script>
 
@@ -357,7 +371,7 @@ export default {
   text-align: center;
   line-height: 32px;
 }
-.list {
+#list {
   .form {
     .el-row {
       background: #fff;
@@ -397,7 +411,7 @@ export default {
     text-align: right;
   }
 }
-.tableRow {
+.tableElRow {
   margin-top: 10px;
   text-align: right;
   padding: 10px;

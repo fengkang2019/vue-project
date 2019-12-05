@@ -4,16 +4,24 @@ import Vuex from 'vuex';
 Vue.use(Vuex);
 
 
-const store =new Vuex.Store({
-    state:{
-        data:'1234'
+const store = new Vuex.Store({
+    state: {
+        userLogin: {},
+        route: ""
     },
-    actions:{
-        
-    },
-    mutations:{
+    actions: {
 
     },
+    mutations: {
+        //保存登录返回的数据
+        savaUserLogin(state, userLogin) {
+            state.userLogin = userLogin
+            // Object.assign(state.userLogin,userLogin)
+        },
+        saveRoute(state, route) {
+            state.route = route;
+        }
 
+    },
 })
 export default store;

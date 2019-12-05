@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  props: ["chartId", "width", "height", "text"],
+  props: ["chartId", "width", "height", "text","pieDatas","n","txt"],
   data() {
     return {};
   },
@@ -40,7 +40,7 @@ export default {
           left: "66%",
           top: "48%",
           style: {
-            text: "5/次 \n未接听次数",
+            text: this.n+"/次 \n"+this.txt,
             textAlign: "center",
             // fill: "#fff",
             fontSize: 12
@@ -50,8 +50,8 @@ export default {
           {
             name: "",
             type: "pie",
-            radius: [60, "50%"],
-            center: ["70%", "50%"],
+            radius: [40, "50%"],
+            center: ["70%", "55%"],
             selectedMode: "single",
             selectedOffset: 0,
             roseType: true,
@@ -60,13 +60,14 @@ export default {
                 formatter: "{b}"
               }
             },
-            data: [
-              { value: 235, name: "视频广告" },
-              { value: 274, name: "联盟广告" },
-              { value: 310, name: "邮件营销" },
-              { value: 335, name: "直接访问" },
-              { value: 400, name: "搜索引擎" }
-            ],
+            // data: [
+            //   { value: 235, name: "视频广告" },
+            //   { value: 274, name: "联盟广告" },
+            //   // { value: 310, name: "邮件营销" },
+            //   // { value: 335, name: "直接访问" },
+            //   // { value: 400, name: "搜索引擎" }
+            // ],
+            data:this.pieDatas,
             itemStyle: {
               emphasis: {
                 shadowBlur: 10,
@@ -86,21 +87,9 @@ export default {
 </script>
 
 <style lang="scss">
-// .pie {
-//   width: 200px;
-//   height: 100px;
-//   div {
-//     width: 200px;
-//     height: 100px;
-
-//     canvas{
-//         width: 100%;
-//         height: 100%;
-//     }
-//   }
-// }
 .PIE {
   width: 100%;
   height: 100%;
+  padding-left:20px; 
 }
 </style>

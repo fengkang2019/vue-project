@@ -39,8 +39,8 @@
       </el-col>
     </el-row>
     <el-row class="contentRow" type="flex" justify="space-between">
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
           <img src="@/assets/images/online.png" alt />
           <p>所属停车场:</p>
           <p>未来科技城停车场</p>
@@ -56,46 +56,228 @@
           </div>
         </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">2</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">3</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">4</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">5</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">6</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">7</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
     </el-row>
     <el-row class="contentRow contentRowDown" type="flex" justify="space-between">
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">1</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">2</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">3</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">4</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">5</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">6</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
-      <el-col style="width:14%">
-        <div class="grid-content bg-purple">7</div>
+      <el-col style="width:14%" class="contentCol">
+        <div class="grid-content bg-purple contentDiv">
+          <img src="@/assets/images/online.png" alt />
+          <p>所属停车场:</p>
+          <p>未来科技城停车场</p>
+          <p>所属区域:</p>
+          <p>F区域呼叫器</p>
+          <div class="hoverDiv">
+            <p>所属停车场:</p>
+            <p>未来科技城停车场</p>
+            <p>所属区域:</p>
+            <p>F区域呼叫器</p>
+            <p>断网时间:</p>
+            <p>2019-09-10 14:20:30</p>
+          </div>
+        </div>
       </el-col>
     </el-row>
   </div>
@@ -205,9 +387,9 @@ export default {
 .contentRow {
   background: #fff;
   height: 260px;
-  .el-col {
+  .contentCol {
     padding: 10px;
-    .grid-content {
+    .contentDiv {
       width: 100%;
       height: 100%;
       background: #f6f6f6;

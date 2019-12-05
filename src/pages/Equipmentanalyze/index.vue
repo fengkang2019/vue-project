@@ -1,5 +1,5 @@
 <template>
-  <div class="equipmentanalyze">
+  <div id="equipmentanalyze">
     <el-form label-position="center" ref="form" :model="form" class="form">
       <el-row>
         <el-col :span="7">
@@ -151,7 +151,7 @@ export default {
 .btn {
   background: #3e549d;
 }
-.equipmentanalyze {
+#equipmentanalyze {
   .echart {
     margin-top: 10px;
     background: #f2f3f7;

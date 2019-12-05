@@ -8,7 +8,7 @@ html,body,#app {
     padding: 0;
     margin: 0;
 }
-.el-button--primary {
+.btn {
     color: #FFF;
     background-color: #3d539c;
     border-color: #3d539c;
@@ -26,6 +26,9 @@ html,body,#app {
     text-align: right;
     margin-top:20px ;
 }
+.block>.el-pagination.is-background .el-pager li:not(.disabled).active{
+    background: #3e549d;
+}
 .el-form-item__label {
     background: #f2f3f7;
     height: 32px;
@@ -38,4 +41,7 @@ html,body,#app {
   .cell{
       text-align: center;
   }
-  
+ .el-table .el-table__header-wrapper thead tr th {
+        background-color: #dcdcdc;
+     }
+    

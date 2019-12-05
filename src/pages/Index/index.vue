@@ -9,14 +9,13 @@
           </el-col>
           <el-col class="headerRight">
             <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-            <el-dropdown>
+            <el-dropdown @command="loginOut">
               <span class="el-dropdown-link">
-                马冬梅
+                {{user}}
                 <i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>黄金糕</el-dropdown-item>
-                <el-dropdown-item>狮子头</el-dropdown-item>
+                <el-dropdown-item command="loginOut">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-col>
@@ -32,7 +31,7 @@
             @open="handleOpen"
             @close="handleClose"
             @select="selectOptions"
-            background-color="#313445"
+            background-color="#282b3a"
             text-color="#fff"
             active-text-color="#5a71c1"
             :unique-opened="true"
@@ -133,10 +132,14 @@
 </template>
 
 <script>
+import { mapMutations } from "vuex";
+import { saveUserLogin } from "@/utils";
+
 export default {
   data() {
     return {
-      active: "1"
+      active: "1",
+      user: "操作员"
     };
   },
   methods: {
@@ -149,7 +152,20 @@ export default {
     selectOptions(index, indexPath) {
       console.log(index, indexPath);
       console.log(this.active);
+    },
+    loginOut(val) {
+      if (val == "loginOut") {
+        console.log(this.$route.name);
+        this.$store.commit("saveRoute", this.$route.name);
+        this.$router.push({ name: "login" });
+      }
     }
+  },
+  mounted() {
+    if (sessionStorage.getItem("account")) {
+      this.user = JSON.parse(sessionStorage.getItem("account")).user;
+    }
+    saveUserLogin(this);
   }
 };
 </script>
@@ -209,20 +225,13 @@ export default {
   height: 100%;
   background: #313445;
   overflow: hidden;
-  .el-menu{
-    width: 100%;
-    li.el-submenu{
-      width: 100%;
-      li.el-menu-item-group{
-      }
-    }
-  }
   .icon-shebeiguanli {
     font-size: 18px;
-    // display: block;
-    // width: 24px;
     margin-right: 10px;
   }
+}
+.el-aside > ul > li > div.el-submenu__title {
+  margin-right: 20px;
 }
 .el-main {
   background-color: #f2f3f7;
