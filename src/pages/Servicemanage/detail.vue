@@ -35,7 +35,7 @@
           <el-input v-model="currentData.opername" autocomplete="off" placeholder="请输入用户账号"></el-input>
         </el-form-item>
         <el-form-item label="密码:" prop="tradePwd">
-          <el-input v-model="currentData.tradePwd" autocomplete="off" placeholder="请输入密码"></el-input>
+          <el-input type="password" v-model="currentData.tradePwd" autocomplete="off" placeholder="请输入密码"></el-input>
         </el-form-item>
         <el-form-item label="开关闸权限:">
           <el-switch v-model="currentData.privilege"></el-switch>
@@ -52,7 +52,7 @@
         </el-form-item>
       </el-form>
       <span v-if="type!=2" slot="footer" class="dialog-footer">
-        <el-button size="small" class="btn" @click="cancel">取 消</el-button>
+        <el-button size="small" class="btn" type="primary" @click="cancel">取 消</el-button>
         <el-button size="small" class="btn" type="primary" @click="confirm(currentData)">确 定</el-button>
       </span>
     </el-dialog>

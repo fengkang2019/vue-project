@@ -3,10 +3,10 @@
     <el-dialog title="修改密码" :visible.sync="visible3" width="30%" :before-close="handleClose">
       <el-form size="small" label-width="120px" :model="form" :rules="rules" ref="ruleChangePwd">
         <el-form-item label="新密码:" prop="pwd">
-          <el-input v-model="form.pwd" autocomplete="off" placeholder="请输入新密码"></el-input>
+          <el-input type="password" v-model="form.pwd" autocomplete="off" placeholder="请输入新密码"></el-input>
         </el-form-item>
         <el-form-item label="再次输入密码:" prop="pwd2">
-          <el-input v-model="form.pwd2" autocomplete="off" placeholder="请输入电话号码"></el-input>
+          <el-input type="password" v-model="form.pwd2" autocomplete="off" placeholder="请输入电话号码"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
