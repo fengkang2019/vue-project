@@ -41,7 +41,7 @@
                 </el-tab-pane>
                 <el-tab-pane>
                   <span slot="label">
-                    <el-badge class="mark" value="12">未接听</el-badge>
+                    <el-badge class="mark" value="2">未接听</el-badge>
                   </span>
                   配置管理
                 </el-tab-pane>
@@ -273,6 +273,7 @@ import DetailTable from "./DetailTable";
 import { saveUserLogin } from "@/utils";
 var dhweb;
 dhweb = new DHAlarmWeb();
+// var timer = "";
 import { getqueryDayParkSerialEX } from "@/request/parkRecord/queryParkRecord";
 import { getCutoffReason } from "@/request/parkRecord/CutoffReason";
 import { getqueryCharge } from "@/request/parkRecord/queryParkCharge";
@@ -320,7 +321,8 @@ export default {
 
       //计费
       charge: [],
-      abnormal: []
+      abnormal: [],
+      timer: ""
     };
   },
   methods: {
@@ -363,14 +365,14 @@ export default {
         })
         .then(res => {
           if (res) {
-            this.form.carNumColor="1"
+            this.form.carNumColor = "1";
             that.state1 = true;
             that.state2 = true;
             that.state3 = false;
             that.devId = res.data.devId;
             that.changeStatus(1, item);
             that.searchDevParkInfo(item);
-            that.playRT(that.devId);
+            that.playRT();
           } else {
             return false;
           }
@@ -507,11 +509,15 @@ export default {
         // p_type: "2",
         serialtype: "1"
       };
-      console.log(carId);
+      // console.log(carId);
       if (carId) {
         reqData.car_id = carId;
       }
-      getqueryDayParkSerialEX(reqData,this.$store.state.userLogin.cust_id,this.$store.state.userLogin.session).then(res => {
+      getqueryDayParkSerialEX(
+        reqData,
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           that.carInfo2 = res.data.ANSWERS[0].ANS_COMM_DATA;
           const reqData = {
@@ -524,7 +530,11 @@ export default {
           if (carType) {
             reqData.cartype = carType;
           }
-          getqueryCharge(reqData,this.$store.state.userLogin.cust_id,this.$store.state.userLogin.cust_id).then(res => {
+          getqueryCharge(
+            reqData,
+            this.$store.state.userLogin.cust_id,
+            this.$store.state.userLogin.cust_id
+          ).then(res => {
             if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
               that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
               console.log(that.charge);
@@ -557,9 +567,15 @@ export default {
           }
         });
     },
-    playRT(devId) {
+    playRT() {
       let that = this;
-      dhweb.playRT($("#callerVideo")[0], devId, this.loginHandle, true);
+      console.log(this.loginHandle);
+     dhweb.playRT(
+        $("#callerVideo")[0],
+        this.devId,
+        this.loginHandle,
+        true
+      );
       dhweb.onPlayRT = function(data) {
         if (data.error != "success") {
           console.log(data);
@@ -568,31 +584,11 @@ export default {
     },
     stopRT() {
       console.log(this.devId, this.loginHandle);
-      dhweb.stopRT(this.devId, this.loginHandle);
+     dhweb.stopRT(this.devId, this.loginHandle);
       this.state3 = true;
       $("#callerVideo").attr("src", "");
     },
-    login() {
-      const that = this;
-      dhweb.login("cs001", "cs001", process.env.EQUIPMENT_IP);
-      dhweb.onLogin = function(data) {
-        var params = data.params;
 
-        if (data.error == "success") {
-          that.loginHandle = params.loginHandle;
-          console.log(devId);
-          that.$message.error("设备登录成功");
-        } else {
-          that.$message.error("当前网络状态差,设备登录失败");
-
-          setTimeout(function() {
-            that.$message.close();
-            that.$message.info("正在重新登录");
-            that.$router.go(0);
-          }, 1500);
-        }
-      };
-    },
     timeStamp(second_time) {
       var time = parseInt(second_time) + "秒";
       if (parseInt(second_time) > 60) {
@@ -613,20 +609,45 @@ export default {
       }
       return time;
     },
+    startSearch() {
+      this.timer = setInterval(() => {
+        this.searchRecord(0);
+      }, 3000);
+    },
     //开闸
     cutOff() {
       dhweb.doControl(this.devId, this.loginHandle, 1);
+    },
+    loginEquipment() {
+      const that = this;
+      dhweb.login("cs001", "cs001", process.env.EQUIPMENT_IP);
+      dhweb.onLogin = function(data) {
+        var params = data.params;
+        console.log(data);
+        if (data.error == "success") {
+          that.loginHandle = params.loginHandle;
+          that.$message.success("设备登录成功,可接听呼叫");
+        } else {
+          that.$message.error("当前网络状态差,设备登录失败");
+          setTimeout(function() {
+            that.$message.info("正在重新登录,请耐心等待!");
+            that.$router.go(0);
+          }, 1500);
+        }
+      };
     }
   },
   // sessionStorage.getItem('loginHandle')
   // devId: "18461"
   // devNo: "1002"
   // handle:"443216592"
-
+  created() {
+    this.startSearch();
+    
+  },
   mounted() {
-    this.login();
     saveUserLogin(this);
-    this.searchRecord(0);
+    this.loginEquipment();
     getCutoffReason({
       category_en: "except_open_gate"
     }).then(res => {
@@ -634,14 +655,13 @@ export default {
         this.abnormal = res.data.ANSWERS[0].ANS_COMM_DATA;
       }
     });
-    console.log(this.$store.state.userLogin);
   },
   computed: {
     ...mapState(["userLogin"])
+  },
+  beforeDestroy() {
+    clearInterval(this.timer);
   }
-  // beforeDestroy() {
-  //   sessionStorage.setItem("store", JSON.stringify(this.$store.state));
-  // }
 };
 </script>
 

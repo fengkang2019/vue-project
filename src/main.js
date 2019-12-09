@@ -23,8 +23,8 @@ import 'element-ui/lib/theme-chalk/index.css';
 
 //引入所有过滤器
 import * as filters from "@/utils/filters"
-Object.keys(filters).forEach(key=>{
-  Vue.filter(key,filters[key])
+Object.keys(filters).forEach(key => {
+  Vue.filter(key, filters[key])
 })
 
 
@@ -45,9 +45,9 @@ Vue.prototype.$axios = axios;
 import ImageViewer from "vue2-viewer";
 Vue.use(ImageViewer)
 
-var dhweb;
-dhweb =new DHAlarmWeb();
-Vue.prototype.$dhweb = dhweb;
+
+// let dhweb = new DHAlarmWeb();
+// Vue.prototype.$dhweb = dhweb;
 
 console.log("vue 项目启动的 main.js dpr ==" + window.devicePixelRatio)
 

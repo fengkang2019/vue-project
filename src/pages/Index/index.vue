@@ -139,7 +139,7 @@ export default {
   data() {
     return {
       active: "1",
-      user: "操作员"
+      user: ""
     };
   },
   methods: {

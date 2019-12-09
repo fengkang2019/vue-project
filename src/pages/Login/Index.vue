@@ -87,7 +87,7 @@ export default {
             trade_pwd: md5(md5(login.trade_pwd) + 12345678)
           };
           acctCustLogin(reqData, "0", "").then(res => {
-            console.log(res);
+            // console.log(res);
             if (typeof res != "object") {
               this.$message.error(res);
               return false;
@@ -114,7 +114,8 @@ export default {
               //     console.log(res);
               //   });
               this.userLogin = res[0];
-              this.$store.commit("savaUserLogin", this.userLogin);
+              // this.$store.commit("saveSDK",this.$dhweb)
+              this.$store.commit("saveUserLogin", this.userLogin);
               if (this.$store.state.route) {
                 this.$router.push({ name: this.$store.state.route });
               } else {
@@ -163,7 +164,8 @@ export default {
         usr_code: userCode //操作员名
       };
       return acctQueryOperatorByName(reqData, custId, session);
-    }
+    },
+    
   },
 
   mounted() {
