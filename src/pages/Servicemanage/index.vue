@@ -16,13 +16,11 @@
       </el-form>
     </div>
     <div class="tableInfo">
-      <el-table
-        :data="tableData.slice((form.current-1)*form.size,form.current*form.size)"
-        stripe
-        style="width: 100%"
-        border
-      >
-        <el-table-column prop="index" label="序号" width="80">
+      <el-table :data="tableData" stripe style="width: 100%" border>
+        <el-table-column label="序号" width="80">
+          <template slot-scope="scope">
+            <span>{{(form.current-1)*form.size+scope.$index+1}}</span>
+          </template>
         </el-table-column>
         <el-table-column prop="name" label="姓名"></el-table-column>
         <el-table-column prop="opername" label="账号"></el-table-column>
@@ -133,7 +131,7 @@ export default {
     //查找
     onSubmit(form) {
       console.log(form);
-      this.form.current =1;
+      this.form.current = 1;
       this.search(form);
     },
     handleSizeChange(val) {
@@ -246,10 +244,7 @@ export default {
           this.form.total = total;
           this.form.size = size;
           this.form.current = current;
-          records.map((item, index) => {
-            item.index = index + 1;
-            that.$set(that.tableData, index, item);
-          });
+          this.tableData = records;
         } else {
           return false;
         }

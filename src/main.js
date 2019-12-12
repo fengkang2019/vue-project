@@ -46,8 +46,8 @@ import ImageViewer from "vue2-viewer";
 Vue.use(ImageViewer)
 
 
-// let dhweb = new DHAlarmWeb();
-// Vue.prototype.$dhweb = dhweb;
+let dhweb = new DHAlarmWeb();
+Vue.prototype.$dhweb = dhweb;
 
 console.log("vue 项目启动的 main.js dpr ==" + window.devicePixelRatio)
 

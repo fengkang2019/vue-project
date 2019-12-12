@@ -9,7 +9,7 @@
       <el-col class="rightCol" :span="10">
         <div class="grid-content bg-purple">
           <p>欢迎登陆运维平台</p>
-          <el-form :model="login" :rules="rules" ref="logForm">
+          <el-form :model="login" :rules="rules" ref="logForm" @keydown="confirmLogin(this.$event)">
             <el-form-item prop="usr_code">
               <el-input
                 placeholder="请输入用户名"
@@ -68,6 +68,14 @@ export default {
     };
   },
   methods: {
+    confirmLogin(event) {
+      console.log(event);
+      if (event.keyCode == 13 || event.keyCode == 108) {
+        event.returnValue = false;
+        event.cancel = true;
+        this.onSubmit(this.login);
+      }
+    },
     onSubmit: function(login) {
       const that = this;
       this.$refs.logForm.validate(valid => {
@@ -77,10 +85,11 @@ export default {
               "account",
               JSON.stringify({
                 user: login.usr_code,
-                trade_pwd: login.trade_pwd
+                trade_pwd: md5(md5(login.trade_pwd))
               })
             );
           }
+
           const reqData = {
             login_from_type: "51",
             usr_code: login.usr_code,
@@ -113,20 +122,53 @@ export default {
               //   .then(res => {
               //     console.log(res);
               //   });
+             this.loginEquipment();
+
               this.userLogin = res[0];
-              // this.$store.commit("saveSDK",this.$dhweb)
               this.$store.commit("saveUserLogin", this.userLogin);
-              if (this.$store.state.route) {
-                this.$router.push({ name: this.$store.state.route });
-              } else {
-                this.$router.push({ name: "longcutoff" });
-              }
             }
           });
         } else {
           return false;
         }
       });
+    },
+    loginEquipment() {
+      const that = this;
+      this.$dhweb.login("fly001", "fly123456", process.env.EQUIPMENT_IP);
+      //获取设备列表
+      let deviceLists = [];
+      this.$dhweb.onDeviceList = function(object) {
+        let deviceList = object.params.list;
+        for (var i in deviceList) {
+          let deviceObj = {};
+          deviceObj.label = deviceList[i].deviceName;
+          deviceObj.devId =deviceList[i].deviceId;
+          deviceObj.action =deviceList[i].action;
+          deviceLists.push(deviceObj);
+        }
+        console.log(deviceList)
+      };
+      console.log(deviceLists);
+      this.$store.commit("saveDeviceLists", deviceLists);
+      this.$dhweb.onLogin = function(data) {
+        var params = data.params;
+        if (data.error == "success") {
+          that.$store.commit("saveLoginHandle", params.loginHandle);
+          that.$message.success("设备登录成功,可接听呼叫");
+          if (that.$store.state.route) {
+            that.$router.push({ name: that.$store.state.route });
+          } else {
+            that.$router.push({ name: "longcutoff" });
+          }
+        } else {
+          that.$message.error("当前网络状态差,设备登录失败");
+          setTimeout(function() {
+            that.$message.info("正在重新登录,请耐心等待!");
+            that.$router.go(0);
+          }, 1500);
+        }
+      };
     },
     myQueryEnterpriseByAccountId(param) {
       let ansCommData = param;
@@ -159,13 +201,11 @@ export default {
       let custId = data.cust_id;
       let session = data.session;
       let userCode = data.name;
-      //Need to save the userCode in the Redux
       let reqData = {
         usr_code: userCode //操作员名
       };
       return acctQueryOperatorByName(reqData, custId, session);
-    },
-    
+    }
   },
 
   mounted() {

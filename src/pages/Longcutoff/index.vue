@@ -104,6 +104,19 @@
               </div>
             </el-col>
           </el-row>
+          <el-row>
+            <el-col>
+              <div class="title">设备列表</div>
+              <el-tree
+                :data="deviceList"
+                :props="defaultProps"
+                @node-click="handleNodeClick"
+                :default-expand-all="true"
+                :highlight-current="true"
+                icon-class="el-icon-folder-opened"
+              ></el-tree>
+            </el-col>
+          </el-row>
         </div>
       </el-col>
       <el-col class="center" :span="10">
@@ -120,6 +133,7 @@
             </div>
           </div>
           <div class="monitor">
+            callerVideo
             <video id="monitorVideo" controls>
               <source src type="video/mp4" />
             </video>
@@ -194,7 +208,9 @@
                 </p>
                 <p>
                   <span>需缴费</span>
-                  <span class="red">{{charge[0]?charge[0].parkamt-charge[0].coupon_amt:""}}</span>
+                  <span
+                    class="red"
+                  >{{charge[0]?charge[0].parkamt-charge[0].coupon_amt-parkamt-charge[0].paidmt:""}}</span>
                 </p>
               </el-col>
               <el-col v-if="!state2" class="inCar2">
@@ -271,9 +287,8 @@
 <script>
 import DetailTable from "./DetailTable";
 import { saveUserLogin } from "@/utils";
-var dhweb;
-dhweb = new DHAlarmWeb();
-// var timer = "";
+// var dhweb;
+// dhweb = new DHAlarmWeb();
 import { getqueryDayParkSerialEX } from "@/request/parkRecord/queryParkRecord";
 import { getCutoffReason } from "@/request/parkRecord/CutoffReason";
 import { getqueryCharge } from "@/request/parkRecord/queryParkCharge";
@@ -307,7 +322,7 @@ export default {
       //正在接听的记录信息
       recordsInfo: {},
       //登录句柄
-      loginHandle: "",
+      // loginHandle: "",
       //设备id
       devId: "",
       //车卡信息
@@ -322,7 +337,18 @@ export default {
       //计费
       charge: [],
       abnormal: [],
-      timer: ""
+      timer: "",
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
+      deviceList: [
+        {
+          label: "武汉无人值守项目",
+
+          children: this.$store.state.deviceLists
+        }
+      ]
     };
   },
   methods: {
@@ -367,7 +393,7 @@ export default {
           if (res) {
             this.form.carNumColor = "1";
             that.state1 = true;
-            that.state2 = true;
+            that.state4 = true;
             that.state3 = false;
             that.devId = res.data.devId;
             that.changeStatus(1, item);
@@ -456,14 +482,12 @@ export default {
           if (res) {
             if (status == 1) {
               that.records1 = [];
-              console.log(item);
               that.records1.push(item);
-              console.log(that.records1);
             } else if (status == 2) {
               that.records2 = [];
               that.records2.push(item);
               that.records1 = [];
-              that.state2 = false;
+              that.state4 = false;
             }
             that.searchRecord(0);
           } else {
@@ -490,6 +514,7 @@ export default {
           }
         });
     },
+    // 查询 入场车信息
     searchCarInfos(carId, carType) {
       const that = this;
       const reqData = {
@@ -520,29 +545,33 @@ export default {
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           that.carInfo2 = res.data.ANSWERS[0].ANS_COMM_DATA;
-          const reqData = {
-            car_id: that.carInfo2[0].car_id,
-            cartype: that.carInfo2[0].cartype,
-            intime: that.carInfo2[0].intime,
-            park_code: that.carInfo2[0].park_code,
-            region_code: that.carInfo2[0].region_code
-          };
-          if (carType) {
-            reqData.cartype = carType;
-          }
-          getqueryCharge(
-            reqData,
-            this.$store.state.userLogin.cust_id,
-            this.$store.state.userLogin.cust_id
-          ).then(res => {
-            if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-              that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
-              console.log(that.charge);
-            } else {
-              this.$message.error("查询入场车辆计费失败");
-              return false;
+          if (that.carInfo2.length > 0) {
+            const reqData = {
+              car_id: that.carInfo2[0].car_id,
+              cartype: that.carInfo2[0].cartype,
+              intime: that.carInfo2[0].intime,
+              park_code: that.carInfo2[0].park_code,
+              region_code: that.carInfo2[0].region_code
+            };
+            if (carType) {
+              reqData.cartype = carType;
             }
-          });
+            getqueryCharge(
+              reqData,
+              this.$store.state.userLogin.cust_id,
+              this.$store.state.userLogin.cust_id
+            ).then(res => {
+              if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+                that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
+              } else {
+                this.$message.error("查询入场车辆计费失败");
+                return false;
+              }
+            });
+          } else {
+            this.$message.error("此设备暂无车辆入场信息");
+            return false;
+          }
         } else {
           this.$message.error("查询入场车辆失败");
           return false;
@@ -552,62 +581,67 @@ export default {
     //查询车卡信息
     searchCarInfo() {
       const that = this;
-      this.$axios
-        .post("/pagerSelect/searchCarDetail", {
+      if (this.parkInfo.length > 0) {
+        console.log(this.parkInfo);
+        const reqData = {
           parkCode: this.parkInfo.parkCode,
           carType: this.parkInfo.carType,
           carId: this.parkInfo.carId
-        })
-        .then(res => {
+        };
+
+        this.$axios.post("/pagerSelect/searchCarDetail", reqData).then(res => {
           if (res) {
             that.carInfo = res.data;
+            console.log(res.data);
             that.groupId = res.data.member.id;
           } else {
+            that.$message.error("暂无车卡信息");
             return false;
           }
         });
+      } else {
+        return false;
+      }
     },
+    //播放视屏
     playRT() {
       let that = this;
-      console.log(this.loginHandle);
-     dhweb.playRT(
-        $("#callerVideo")[0],
+      console.log(this.$store.state.loginHandle);
+      console.log(this.devId);
+      this.$dhweb.playRT(
+        $("#monitorVideo")[0],
         this.devId,
-        this.loginHandle,
+        this.$store.state.loginHandle,
         true
       );
-      dhweb.onPlayRT = function(data) {
+      this.$dhweb.onPlayRT = function(data) {
         if (data.error != "success") {
-          console.log(data);
         }
       };
     },
+    //关闭视屏
     stopRT() {
-      console.log(this.devId, this.loginHandle);
-     dhweb.stopRT(this.devId, this.loginHandle);
+      this.$dhweb.stopRT(this.devId, this.$store.state.loginHandle);
       this.state3 = true;
-      $("#callerVideo").attr("src", "");
+       $("#monitorVideo").attr("src", "");
     },
-
-    timeStamp(second_time) {
-      var time = parseInt(second_time) + "秒";
-      if (parseInt(second_time) > 60) {
-        var second = parseInt(second_time) % 60;
-        var min = parseInt(second_time / 60);
-        time = min + "分" + second + "秒";
-        if (min > 60) {
-          min = parseInt(second_time / 60) % 60;
-          var hour = parseInt(parseInt(second_time / 60) / 60);
-          time = hour + "小时" + min + "分" + second + "秒";
-
-          if (hour > 24) {
-            hour = parseInt(parseInt(second_time / 60) / 60) % 24;
-            var day = parseInt(parseInt(parseInt(second_time / 60) / 60) / 24);
-            time = day + "天" + hour + "小时" + min + "分" + second + "秒";
-          }
-        }
+    //分转化为时
+    timeStamp(StatusMinute) {
+      var day = parseInt(StatusMinute / 60 / 24);
+      var hour = parseInt((StatusMinute / 60) % 24);
+      var min = parseInt(StatusMinute % 60);
+      StatusMinute = "";
+      if (day > 0) {
+        StatusMinute = day + "天";
       }
-      return time;
+      if (hour > 0) {
+        StatusMinute += hour + "小时";
+      }
+      if (min > 0) {
+        StatusMinute += parseFloat(min) + "分钟";
+      }
+      //三元运算符 传入的分钟数不够一分钟 默认为0分钟，else return 运算后的StatusMinute
+      return StatusMinute == "" ? "0分钟" : StatusMinute;
     },
     startSearch() {
       this.timer = setInterval(() => {
@@ -616,38 +650,32 @@ export default {
     },
     //开闸
     cutOff() {
-      dhweb.doControl(this.devId, this.loginHandle, 1);
+      this.$dhweb.doControl(this.devId, this.$store.state.loginHandle, 1);
     },
-    loginEquipment() {
-      const that = this;
-      dhweb.login("cs001", "cs001", process.env.EQUIPMENT_IP);
-      dhweb.onLogin = function(data) {
-        var params = data.params;
-        console.log(data);
-        if (data.error == "success") {
-          that.loginHandle = params.loginHandle;
-          that.$message.success("设备登录成功,可接听呼叫");
-        } else {
-          that.$message.error("当前网络状态差,设备登录失败");
-          setTimeout(function() {
-            that.$message.info("正在重新登录,请耐心等待!");
-            that.$router.go(0);
-          }, 1500);
-        }
-      };
+    //打开 监控摄像头
+    handleNodeClick(data) {
+      console.log(data);
+      console.log(
+        $("#monitorVideo")[0],
+        data.devId,
+        this.$store.state.loginHandle
+      );
+      this.state2 = true;
+      this.$dhweb.playRT(
+        $("#callerVideo")[0],
+        data.devId,
+        this.$store.state.loginHandle,
+        true
+      );
     }
   },
-  // sessionStorage.getItem('loginHandle')
-  // devId: "18461"
-  // devNo: "1002"
-  // handle:"443216592"
+
   created() {
     this.startSearch();
-    
   },
   mounted() {
     saveUserLogin(this);
-    this.loginEquipment();
+    console.log(this.$store.state.deviceLists);
     getCutoffReason({
       category_en: "except_open_gate"
     }).then(res => {
@@ -657,7 +685,7 @@ export default {
     });
   },
   computed: {
-    ...mapState(["userLogin"])
+    ...mapState(["userLogin", "loginHandle", "deviceLists"])
   },
   beforeDestroy() {
     clearInterval(this.timer);

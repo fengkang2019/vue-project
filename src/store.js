@@ -8,8 +8,8 @@ const store = new Vuex.Store({
     state: {
         userLogin: {},
         route: "",
-        // loginHandle:"",
-        // dbweb:""
+        loginHandle:"",
+        deviceLists:[]
     },
     actions: {
 
@@ -23,13 +23,12 @@ const store = new Vuex.Store({
         saveRoute(state, route) {
             state.route = route;
         },
-        // saveLoginHandle(state,loginHandle){
-        //     state.loginHandle =loginHandle;
-        // },
-        // saveSDK(state,fn){
-        //     state.dbweb =fn;
-        //     console.log(state.dbweb)
-        // }
+        saveLoginHandle(state,loginHandle){
+            state.loginHandle =loginHandle;
+        },
+        saveDeviceLists(state,deviceLists){
+            state.deviceLists =deviceLists
+        }
 
     },
 })

@@ -132,7 +132,7 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapMutations, mapState } from "vuex";
 import { saveUserLogin } from "@/utils";
 
 export default {
@@ -158,6 +158,7 @@ export default {
         console.log(this.$route.name);
         this.$store.commit("saveRoute", this.$route.name);
         this.$router.push({ name: "login" });
+        this.$dhweb.logout(this.$store.state.loginHandle);
       }
     }
   },
@@ -166,6 +167,9 @@ export default {
       this.user = JSON.parse(sessionStorage.getItem("account")).user;
     }
     saveUserLogin(this);
+  },
+  computed: {
+    ...mapState(["loginHandle"])
   }
 };
 </script>

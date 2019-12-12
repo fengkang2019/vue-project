@@ -181,12 +181,16 @@
     </el-row>
     <el-row class="downRow2" v-if="value==1">
       <el-table
-        :data="tableData.slice((form.current-1)*form.size,form.current*form.size)"
+        :data="tableData"
         border
         style="width: 100%"
         :fit="true"
       >
-        <el-table-column width="60" fixed prop="index" label="序号"></el-table-column>
+        <el-table-column width="60" fixed label="序号">
+          <template slot-scope="scope">
+            <span>{{(form.current-1)*form.size+ scope.$index+1}}</span>
+          </template>
+        </el-table-column>
         <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
         <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
@@ -288,12 +292,12 @@ export default {
     },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
-      this.size = val;
+      this.form.size = val;
       this.searchRecord();
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
-      this.current = val;
+      this.form.current = val;
       this.searchRecord();
     },
     //点击导出
@@ -356,15 +360,10 @@ export default {
       this.$axios.post("/pagerSelect/searchRecord", reqData).then(res => {
         if (res) {
           const { records, size, current, total } = res.data;
-          that.tableData = [];
-          // this.form.size = size;
+          this.form.size = size;
           this.form.current = current;
-          this.total = total;
-
-          records.map((item, index) => {
-            item.index = index + 1;
-            that.$set(that.tableData, index, item);
-          });
+          this.form.total = total;
+          this.tableData =records;
         } else {
           return false;
         }
@@ -388,10 +387,10 @@ export default {
         return "已处理";
       }
     },
-    //充值echarts图表数据
+    //重置echarts图表数据
     reWriteDatas() {
       if (this.pieDatas1) {
-       this.pieDatas1.forEach(element => {
+        this.pieDatas1.forEach(element => {
           element.value = 0;
         });
       }
@@ -417,7 +416,6 @@ export default {
   },
   watch: {
     tableData: function(val) {
-      
       val.map((item, i) => {
         if (item.status == 2) {
           this.pieDatas1[1].value += 1;

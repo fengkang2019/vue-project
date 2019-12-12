@@ -106,12 +106,18 @@
     </el-form>
     <el-row class="tableElRow" :stripe="true">
       <el-table
-        :data="tableData.slice((form.current-1)*form.size,form.current*form.size)"
+        :data="tableData"
         border
         style="width: 100%"
         :fit="true"
       >
-        <el-table-column fixed prop="index" label="序号" width="60px"></el-table-column>
+        <el-table-column fixed  label="序号" width="60px">
+          <template slot-scope="scope">
+            <span>
+              {{(form.current-1)*form.size+scope.$index+1}}
+            </span>
+          </template>
+        </el-table-column>
         <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
         <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
@@ -259,7 +265,7 @@ export default {
     //改变每页数量
     handleSizeChange(val) {
       this.form.size = val;
-      this.search();
+      this.search(this.form);
     },
     //改变当前页数
     handleCurrentChange(val) {
@@ -329,13 +335,9 @@ export default {
           if (res) {
             const { records, current, size, total } = res.data;
             this.form.total = total;
-            // this.form.size = size;
-            // this.form.current = current;
-            that.tableData=[];
-            records.map((item, index) => {
-              item.index = index + 1;
-              that.$set(that.tableData, index, item);
-            });
+            this.form.size = size;
+            this.form.current = current;
+            this.tableData =records;
           } else {
             this.$message.error("暂无数据");
             return false;
