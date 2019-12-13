@@ -140,6 +140,7 @@ export default {
       let deviceLists = [];
       this.$dhweb.onDeviceList = function(object) {
         let deviceList = object.params.list;
+
         for (var i in deviceList) {
           let deviceObj = {};
           deviceObj.label = deviceList[i].deviceName;
@@ -147,9 +148,9 @@ export default {
           deviceObj.action =deviceList[i].action;
           deviceLists.push(deviceObj);
         }
-        console.log(deviceList)
+        console.log(deviceLists)
+
       };
-      console.log(deviceLists);
       this.$store.commit("saveDeviceLists", deviceLists);
       this.$dhweb.onLogin = function(data) {
         var params = data.params;

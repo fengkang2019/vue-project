@@ -10,11 +10,6 @@ import $ from "jquery"
 import moment from 'moment'
 Vue.prototype.$moment = moment
 
-//iconfont
-import "@/styles/font/iconfont.css"
-
-//全局css样式
-import "./styles/index.css"
 
 //elementUi
 import "@/utils/elementUi.js"

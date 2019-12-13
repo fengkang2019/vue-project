@@ -29,10 +29,10 @@
                       <span>区域:</span>
                       <span>{{item.regionCode}}</span>
                     </p>
-                    <div @click="hangup(item)">
+                    <!-- <div @click="hangup(item)">
                       <span class="iconfont icon-guaduan"></span>
                       <span>挂断</span>
-                    </div>
+                    </div>-->
                   </div>
                   <div class="hidden" v-show="!state1">
                     <span class="iconfont icon-web__zanwujilu"></span>
@@ -107,6 +107,14 @@
           <el-row>
             <el-col>
               <div class="title">设备列表</div>
+              <div class="deviceStatu">
+                <span></span>
+                <span>在线:</span>
+                <span>{{30}}</span>
+                <span></span>
+                <span>离线:</span>
+                <span>{{20}}</span>
+                </div>
               <el-tree
                 :data="deviceList"
                 :props="defaultProps"
@@ -122,7 +130,7 @@
       <el-col class="center" :span="10">
         <div class="grid-content bg-purple">
           <div class="caller">
-            <video id="callerVideo" controls>
+            <video id="callerVideo" controls="controls">
               <source src type="video/mp4" />
             </video>
             <div v-show="!state2" class="callerDiv">
@@ -133,8 +141,7 @@
             </div>
           </div>
           <div class="monitor">
-            callerVideo
-            <video id="monitorVideo" controls>
+            <video id="monitorVideo" controls="controls">
               <source src type="video/mp4" />
             </video>
             <div v-show="!state4" class="monitorDiv">
@@ -154,7 +161,7 @@
             size="small"
             :model="form"
             label-width="0"
-            :disabled="state2?false:true"
+            :disabled="state4?false:true"
           >
             <el-row class="carNum">
               <el-col>
@@ -211,6 +218,10 @@
                   <span
                     class="red"
                   >{{charge[0]?charge[0].parkamt-charge[0].coupon_amt-parkamt-charge[0].paidmt:""}}</span>
+                </p>
+                <p>
+                  <span>已缴费</span>
+                  <span></span>
                 </p>
               </el-col>
               <el-col v-if="!state2" class="inCar2">
@@ -270,9 +281,11 @@
                 <el-form-item>
                   <el-input size="small" v-model="form.remark" placeholder="请输入备注原因"></el-input>
                 </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="onSubmit">确认开闸</el-button>
-                </el-form-item>
+                <el-button type="primary" class="cutOff" @click="onSubmit">确认开闸</el-button>
+                <el-button type="primary" class="callOff" @click="hangup(records1[0])">
+                  <span class="iconfont icon-guaduan"></span>
+                  挂断
+                </el-button>
               </el-col>
             </el-row>
           </el-form>
@@ -415,7 +428,7 @@ export default {
       this.$refs.carform.validate(val => {
         if (val) {
           console.log("搜索车牌号" + form.carNum);
-          this.searchCarInfos(form.carNum, form.carNumColor);
+          this.searchInCarInfos(form.carNum, form.carNumColor);
         } else {
           return false;
         }
@@ -486,6 +499,7 @@ export default {
             } else if (status == 2) {
               that.records2 = [];
               that.records2.push(item);
+              //让接听中为空
               that.records1 = [];
               that.state4 = false;
             }
@@ -508,14 +522,14 @@ export default {
           if (res) {
             that.parkInfo = res.data;
             that.searchCarInfo();
-            that.searchCarInfos();
+            that.searchInCarInfos();
           } else {
             return false;
           }
         });
     },
     // 查询 入场车信息
-    searchCarInfos(carId, carType) {
+    searchInCarInfos(carId, carType) {
       const that = this;
       const reqData = {
         maxid: 0,
@@ -623,7 +637,7 @@ export default {
     stopRT() {
       this.$dhweb.stopRT(this.devId, this.$store.state.loginHandle);
       this.state3 = true;
-       $("#monitorVideo").attr("src", "");
+      $("#monitorVideo").attr("src", "");
     },
     //分转化为时
     timeStamp(StatusMinute) {
@@ -789,6 +803,25 @@ $fff: #fff;
                 span.iconfont {
                   font-size: 70px;
                 }
+              }
+            }
+            .deviceStatu{
+              height: 30px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              span:nth-child(3n+1){
+                display: block;
+                width: 15px;
+                height: 15px;
+                background: #0fab00;
+                border-radius:50%; 
+              }
+              span:nth-child(4){
+                background: #e74c2d;
+              }
+              span{
+                margin: 0 10px;
               }
             }
           }
@@ -1235,10 +1268,21 @@ $fff: #fff;
               }
             }
             .el-button {
-              width: $mainWdth;
+              width: 0.6 * $mainWdth;
               background: #0fab00;
               border-radius: 20px;
               margin-top: 10px;
+              border: 0;
+              font-weight: 600;
+            }
+            .callOff {
+              width: 0.3 * $mainWdth;
+              background: #e74c2d;
+              border-radius: 20px;
+              margin-top: 10px;
+              border: 0;
+              margin-left: 35px;
+              font-weight: 600;
             }
             .is-disabled {
               background: #ccc;
