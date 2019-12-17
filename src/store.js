@@ -9,7 +9,8 @@ const store = new Vuex.Store({
         userLogin: {},
         route: "",
         loginHandle:"",
-        deviceLists:[]
+        deviceLists:[],
+        parkCodeList:[],
     },
     actions: {
 
@@ -28,6 +29,10 @@ const store = new Vuex.Store({
         },
         saveDeviceLists(state,deviceLists){
             state.deviceLists =deviceLists
+        },
+        saveParkCodeList(state,agentTree){
+            console.log(11)
+            state.parkCodeList =agentTree;
         }
 
     },

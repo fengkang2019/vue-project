@@ -15,7 +15,7 @@
                     </p>
                     <p>
                       <span>呼叫类型:</span>
-                      <span>{{item.type}}</span>
+                      <span>{{item.type==1?"按键呼叫":"自动呼叫"}}</span>
                     </p>
                     <p>
                       <span>呼入时间:</span>
@@ -23,16 +23,12 @@
                     </p>
                     <p>
                       <span>停车场:</span>
-                      <span>{{item.parkCode}}</span>
+                      <span>{{getFullName(item.parkCode)}}</span>
                     </p>
                     <p>
                       <span>区域:</span>
-                      <span>{{item.regionCode}}</span>
+                      <span>{{getRegionName(item.parkCode,item.regionCode)}}</span>
                     </p>
-                    <!-- <div @click="hangup(item)">
-                      <span class="iconfont icon-guaduan"></span>
-                      <span>挂断</span>
-                    </div>-->
                   </div>
                   <div class="hidden" v-show="!state1">
                     <span class="iconfont icon-web__zanwujilu"></span>
@@ -54,7 +50,7 @@
                     </p>
                     <p>
                       <span>呼叫类型:</span>
-                      <span>{{item.type}}</span>
+                      <span>{{item.type==1?"按键呼叫":"自动呼叫"}}</span>
                     </p>
                     <p>
                       <span>呼入时间:</span>
@@ -62,11 +58,11 @@
                     </p>
                     <p>
                       <span>停车场:</span>
-                      <span>{{item.parkCode}}</span>
+                      <span>{{getFullName(item.parkCode)}}</span>
                     </p>
                     <p>
                       <span>区域:</span>
-                      <span>{{item.regionCode}}</span>
+                      <span>{{getRegionName(item.parkCode,item.regionCode)}}</span>
                     </p>
                   </div>
                 </el-tab-pane>
@@ -83,7 +79,7 @@
                 </p>
                 <p>
                   <span>呼叫类型:</span>
-                  <span>{{item.type}}</span>
+                  <span>{{item.type==1?"按键呼叫":"自动呼叫"}}</span>
                 </p>
                 <p>
                   <span>呼入时间:</span>
@@ -91,16 +87,16 @@
                 </p>
                 <p>
                   <span>停车场:</span>
-                  <span>{{item.parkCode}}</span>
+                  <span>{{getFullName(item.parkCode)}}</span>
                 </p>
                 <p>
                   <span>区域:</span>
-                  <span>{{item.regionCode}}</span>
+                  <span>{{getRegionName(item.parkCode,item.regionCode)}}</span>
                 </p>
-                <div @click="answer(item)">
+                <el-button @click="answer(item)" :disabled="isAnswered">
                   <span class="iconfont icon-dianhua"></span>
                   <span>接听</span>
-                </div>
+                </el-button>
               </div>
             </el-col>
           </el-row>
@@ -114,7 +110,7 @@
                 <span></span>
                 <span>离线:</span>
                 <span>{{20}}</span>
-                </div>
+              </div>
               <el-tree
                 :data="deviceList"
                 :props="defaultProps"
@@ -167,20 +163,32 @@
               <el-col>
                 <div class="searchCar">
                   <el-form-item prop="carNum" class="carNumFormItem">
-                    <el-input v-model="form.carNum" placeholder="请输入车牌">
+                    <!-- <el-input v-model="form.carNum" placeholder="请输入车牌">
                       <i class="el-icon-search" slot="suffix" @click="searchCar(form)"></i>
-                    </el-input>
+                    </el-input>-->
+                    <el-autocomplete
+                      class="inline-input"
+                      placeholder="请输入车牌"
+                      v-model="form.carNum"
+                      :fetch-suggestions="querySearch"
+                      :trigger-on-focus="false"
+                      @select="handleSelect"
+                      @input="inputCarId(form.carNum)"
+                    >
+                      <i class="el-icon-search" slot="suffix" @click="searchCar(form)"></i>
+                    </el-autocomplete>
                   </el-form-item>
                   <el-form-item class="resetFormItem" prop="reset">
                     <el-button class="reset" @click="resetForm(form)">刷新</el-button>
                   </el-form-item>
                 </div>
                 <div class="carType">
+                  <div class="carId">{{showCarId?showCarId:"--"}}</div>
                   <div class="chooseCarNumColor">
                     <el-form-item>
                       <el-select
                         size="small"
-                        :class="form.carNumColor"
+                        :class="form.carNumColor==1?'blue':form.carNumColor==2?'yellow':form.carNumColor==3?'green':'gray'"
                         v-model="form.carNumColor"
                         placeholder
                       >
@@ -190,13 +198,13 @@
                       </el-select>
                     </el-form-item>
                   </div>
-                  <span>月卡车</span>
-                  <span>小型车</span>
+                  <!-- <span>月卡车</span>
+                  <span>小型车</span>-->
                 </div>
               </el-col>
             </el-row>
             <el-row class="carRecord">
-              <el-col v-if="state2" class="inCar">
+              <el-col v-if="parkState" class="inCar">
                 <p>
                   <span>入场</span>
                   <span>{{carInfo2[0]?formatTime(carInfo2[0].intime):""}}</span>
@@ -207,42 +215,37 @@
                 </p>
                 <p>
                   <span>停车费</span>
-                  <span>{{charge[0]?charge[0].parkamt:""}}</span>
+                  <span>{{charge[0]?charge[0].parkamt+"元":""}}</span>
                 </p>
                 <p>
                   <span>优惠</span>
-                  <span>{{charge[0]?charge[0].coupon_amt:""}}</span>
+                  <span>{{charge[0]?charge[0].coupon_amt+"元":""}}</span>
                 </p>
                 <p>
                   <span>需缴费</span>
                   <span
                     class="red"
-                  >{{charge[0]?charge[0].parkamt-charge[0].coupon_amt-parkamt-charge[0].paidmt:""}}</span>
+                  >{{charge[0]?(charge[0].parkamt-charge[0].coupon_amt-charge[0].paidamt)+"元":""}}</span>
                 </p>
                 <p>
                   <span>已缴费</span>
-                  <span></span>
+                  <span>{{charge[0]?charge[0].paidamt+"元":""}}</span>
                 </p>
               </el-col>
-              <el-col v-if="!state2" class="inCar2">
+              <el-col v-if="!parkState" class="inCar2">
                 <span class="iconfont icon-changyongtubiao-xianxingdaochu-zhuanqu-"></span>
                 <span>暂无停车记录</span>
               </el-col>
             </el-row>
             <el-row class="detail">
-              <el-col v-if="state2">
+              <el-col v-if="state4">
                 <p>
                   <span>订单详情:</span>
                   <span>{{carInfo.commodity?formatTime(carInfo.commodity.ordertime) +" "+ carInfo.commodity.payType +" "+"支付渠道:"+ carInfo.commodity.orderstate:'无'}}</span>
                 </p>
                 <p>
                   <span>月卡车详情:</span>
-                  <span>
-                    {{carInfo.member?formatTime3(carInfo.member.startDate)+"到"+formatTime3(carInfo.member.endDate):"无"}}
-                    <!-- <i
-                      class="red"
-                    >{{ carInfo?carInfo.member.endDate<currentTime():"无"}}</i>-->
-                  </span>
+                  <span>{{carInfo.member?formatTime3(carInfo.member.startDate)+"到"+formatTime3(carInfo.member.endDate):"无"}}</span>
                 </p>
                 <p>
                   <span>内部车详情:</span>
@@ -300,11 +303,11 @@
 <script>
 import DetailTable from "./DetailTable";
 import { saveUserLogin } from "@/utils";
-// var dhweb;
-// dhweb = new DHAlarmWeb();
 import { getqueryDayParkSerialEX } from "@/request/parkRecord/queryParkRecord";
 import { getCutoffReason } from "@/request/parkRecord/CutoffReason";
 import { getqueryCharge } from "@/request/parkRecord/queryParkCharge";
+import { queryCarId } from "@/request/parkRecord/queryCarId";
+import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
 import { mapState } from "vuex";
 export default {
   components: { DetailTable },
@@ -361,7 +364,11 @@ export default {
 
           children: this.$store.state.deviceLists
         }
-      ]
+      ],
+      parkState: false,
+      restaurants: [],
+      showCarId: "",
+      isAnswered: false
     };
   },
   methods: {
@@ -408,6 +415,8 @@ export default {
             that.state1 = true;
             that.state4 = true;
             that.state3 = false;
+            this.parkState = true;
+            this.isAnswered = true;
             that.devId = res.data.devId;
             that.changeStatus(1, item);
             that.searchDevParkInfo(item);
@@ -433,6 +442,54 @@ export default {
           return false;
         }
       });
+    },
+    inputCarId(value) {
+      if (value.length >= 3) {
+        console.log("查车牌列表");
+        queryCarId(
+          {
+            car_id: value
+          },
+          this.$store.state.userLogin.cust_id,
+          this.$store.state.userLogin.session
+        ).then(res => {
+          if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+            const carIdList = [];
+            res.data.ANSWERS[0].ANS_COMM_DATA.forEach(item => {
+              const carIdObj = {};
+              carIdObj.value = item.car_id;
+              carIdList.push(carIdObj);
+            });
+            console.log(carIdList);
+            this.restaurants = carIdList;
+          } else {
+            this.$message.error(res.data.ANSWERS[0].ANS_MSG_HDR.MSG_TEXT);
+          }
+        });
+      }
+    },
+    //////
+    querySearch(queryString, cb) {
+      var restaurants = this.restaurants;
+      var results = queryString
+        ? restaurants.filter(this.createFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) ===
+          0
+        );
+      };
+    },
+    handleSelect(item) {
+      console.log(item);
+    },
+    loadAll() {
+      return [];
     },
     click1(e) {
       console.log(e.target.innerHTML);
@@ -502,6 +559,9 @@ export default {
               //让接听中为空
               that.records1 = [];
               that.state4 = false;
+              this.isAnswered = false;
+              that.form.carNum = "";
+              that.showCarId = "";
             }
             that.searchRecord(0);
           } else {
@@ -520,7 +580,9 @@ export default {
         })
         .then(res => {
           if (res) {
+            console.log(res);
             that.parkInfo = res.data;
+            console.log(that.parkInfo);
             that.searchCarInfo();
             that.searchInCarInfos();
           } else {
@@ -544,7 +606,7 @@ export default {
         outoperate: "1",
         payobject: "",
         // car_id: res.data.carId,
-        car_id: "鄂A10003",
+        car_id: "鄂A603UU",
         // p_type: "2",
         serialtype: "1"
       };
@@ -560,6 +622,9 @@ export default {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           that.carInfo2 = res.data.ANSWERS[0].ANS_COMM_DATA;
           if (that.carInfo2.length > 0) {
+            console.log(that.carInfo2[0]);
+            this.showCarId = that.carInfo2[0].car_id;
+            this.form.carNumColor = that.carInfo2[0].cartype;
             const reqData = {
               car_id: that.carInfo2[0].car_id,
               cartype: that.carInfo2[0].cartype,
@@ -577,6 +642,7 @@ export default {
             ).then(res => {
               if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
                 that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
+                console.log(that.charge);
               } else {
                 this.$message.error("查询入场车辆计费失败");
                 return false;
@@ -595,7 +661,7 @@ export default {
     //查询车卡信息
     searchCarInfo() {
       const that = this;
-      if (this.parkInfo.length > 0) {
+      if (JSON.stringify(this.parkInfo) != "{}") {
         console.log(this.parkInfo);
         const reqData = {
           parkCode: this.parkInfo.parkCode,
@@ -604,9 +670,8 @@ export default {
         };
 
         this.$axios.post("/pagerSelect/searchCarDetail", reqData).then(res => {
-          if (res) {
+          if (JSON.stringify(res.data.assetsDetail) != "{}") {
             that.carInfo = res.data;
-            console.log(res.data);
             that.groupId = res.data.member.id;
           } else {
             that.$message.error("暂无车卡信息");
@@ -637,6 +702,8 @@ export default {
     stopRT() {
       this.$dhweb.stopRT(this.devId, this.$store.state.loginHandle);
       this.state3 = true;
+      this.parkState = false;
+
       $("#monitorVideo").attr("src", "");
     },
     //分转化为时
@@ -659,7 +726,7 @@ export default {
     },
     startSearch() {
       this.timer = setInterval(() => {
-        this.searchRecord(0);
+        this.searchRecord(2);
       }, 3000);
     },
     //开闸
@@ -681,6 +748,33 @@ export default {
         this.$store.state.loginHandle,
         true
       );
+    },
+    //根据parkCode得到fullname
+    getFullName(parkCode) {
+      let fullName = this.$store.state.parkCodeList.filter(item => {
+        return item.park_code == parkCode;
+      });
+      return fullName.length > 0 ? fullName[0].full_name : "暂无";
+    },
+    //根据regionCode得到regionName
+    getRegionName(parkCode, regionCode) {
+      const reqData = {
+        park_code: parkCode
+      };
+      queryRegionCode(
+        reqData,
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        let regionNames = [];
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+          regionNames = regionCodeList.filter(item => {
+            return (item.region_code = regionCode);
+          });
+        }
+        return regionNames.length > 0 ? regionNames[0].name : "暂无";
+      });
     }
   },
 
@@ -689,7 +783,6 @@ export default {
   },
   mounted() {
     saveUserLogin(this);
-    console.log(this.$store.state.deviceLists);
     getCutoffReason({
       category_en: "except_open_gate"
     }).then(res => {
@@ -699,10 +792,23 @@ export default {
     });
   },
   computed: {
-    ...mapState(["userLogin", "loginHandle", "deviceLists"])
+    ...mapState(["userLogin", "loginHandle", "deviceLists", "parkCodeList"])
   },
   beforeDestroy() {
     clearInterval(this.timer);
+  },
+  beforeRouteLeave(to, from, next) {
+    if (from.name == "longcutoff") {
+      let deviceLength = this.$store.state.deviceLists.length;
+      for (var i = 0; i < deviceLength; i++) {
+        this.$dhweb.stopRT(
+          this.$store.state.deviceLists[i].devId,
+          this.$store.state.loginHandle
+        );
+      }
+      this.isAnswered = false;
+    }
+    next();
   }
 };
 </script>
@@ -805,22 +911,22 @@ $fff: #fff;
                 }
               }
             }
-            .deviceStatu{
+            .deviceStatu {
               height: 30px;
               display: flex;
               align-items: center;
               justify-content: center;
-              span:nth-child(3n+1){
+              span:nth-child(3n + 1) {
                 display: block;
                 width: 15px;
                 height: 15px;
                 background: #0fab00;
-                border-radius:50%; 
+                border-radius: 50%;
               }
-              span:nth-child(4){
+              span:nth-child(4) {
                 background: #e74c2d;
               }
-              span{
+              span {
                 margin: 0 10px;
               }
             }
@@ -836,25 +942,19 @@ $fff: #fff;
                 font-weight: 700;
               }
             }
-            div {
-              width: 80px;
-              height: 25px;
-              line-height: 25px;
+            .el-button {
               background: green;
               text-align: center;
-              border-radius: 15px;
+              border-radius: 20px;
               vertical-align: middle;
               color: $fff;
               position: relative;
               right: -130px;
               top: 20px;
               cursor: pointer;
-              span:nth-child(1) {
-                font-size: 20px;
-              }
-              span:nth-child(2) {
-                font-size: 16px;
-              }
+            }
+            .is-disabled {
+              background: #ccc;
             }
           }
         }
@@ -1153,6 +1253,13 @@ $fff: #fff;
               span:nth-child(3) {
                 border-left: 3px solid #000;
               }
+              div.carId {
+                width: 80px;
+                height: 22px;
+                text-align: center;
+                font-weight: 600;
+                line-height: 24px;
+              }
             }
           }
         }
@@ -1312,6 +1419,10 @@ $fff: #fff;
     }
     li.green {
       background: green;
+      color: #fff;
+    }
+    li.gray {
+      background: #dddddd;
       color: #fff;
     }
     li {

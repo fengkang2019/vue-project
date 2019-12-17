@@ -11,27 +11,51 @@
         :hide-required-asterisk="true"
         prop="parkCode"
       >
-        <el-select size="small" v-model="currentData.parkCode" placeholder="请输入所属停车场">
-          <el-option label="区域一" :value="1"></el-option>
-          <el-option label="区域二" :value="currentData.parkCode"></el-option>
+        <el-select
+          @change="chooseParkCode(currentData.parkCode)"
+          size="small"
+          v-model="currentData.parkCode"
+          placeholder="请输入所属停车场"
+        >
+          <el-option
+            v-for="(item,i) in parkCodeList"
+            :key="i"
+            :label="item.full_name"
+            :value="item.park_code"
+          ></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="所属区域" :label-width="formLabelWidth" prop="regionCode">
-        <el-select size="small" v-model="currentData.regionCode" placeholder="请输入所属区域">
-          <el-option label="区域一" :value="currentData.regionCode"></el-option>
-          <el-option label="区域二" value="1"></el-option>
+        <el-select
+          @change="chooseRegionCode(currentData.regionCode)"
+          size="small"
+          v-model="currentData.regionCode"
+          placeholder="请输入所属区域"
+        >
+          <el-option
+            v-for="(item,i) in regionCodeList"
+            :key="i"
+            :label="item.name"
+            :value="item.region_code"
+          ></el-option>
         </el-select>
       </el-form-item>
-        <el-form-item label="所属通道" :label-width="formLabelWidth" prop="gateCode">
+      <el-form-item label="所属通道" :label-width="formLabelWidth" prop="gateCode">
         <el-select size="small" v-model="currentData.gateCode" placeholder="请输入所属通道">
-          <el-option label="通道一" :value="currentData.gateCode"></el-option>
-          <el-option label="通道二" value="1101012000010109"></el-option>
+          <el-option
+            v-for="(item,i) in GateCodeList"
+            :key="i"
+            :label="item.name"
+            :value="item.gate_code"
+          ></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="设备类型" :label-width="formLabelWidth" prop="type">
         <el-select size="small" v-model="currentData.type" placeholder="请输入设备类型">
-          <el-option label="区域一" :value="currentData.type"></el-option>
-          <el-option label="区域二" value="2"></el-option>
+          <el-option value="1" label="呼叫器"></el-option>
+          <el-option value="2" label="摄像头"></el-option>
+          <el-option value="3" label="LED"></el-option>
+          <el-option value="4" label="PDA"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item v-show="flag!=='2'" label="设备名称" :label-width="formLabelWidth" prop="name">
@@ -62,7 +86,7 @@
           placeholder="请输入设备厂商"
         ></el-input>
       </el-form-item>
-      <el-form-item  label="启用日期" :label-width="formLabelWidth" prop="activeDate">
+      <el-form-item label="启用日期" :label-width="formLabelWidth" prop="activeDate">
         <el-input
           size="small"
           v-model="currentData.activeDate"
@@ -113,6 +137,11 @@
 </template>
 
 <script>
+import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
+import { saveUserLogin } from "@/utils";
+import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
+import { queryGate } from "@/request/parkRecord/queryGate";
+import { getCutoffReason } from "@/request/parkRecord/CutoffReason";
 export default {
   props: ["visibleFlag", "flag", "currentData"],
   data() {
@@ -128,7 +157,7 @@ export default {
         regionCode: [
           { required: true, message: "请输入停车场名称", trigger: "change" }
         ],
-        gateCode:[
+        gateCode: [
           { required: true, message: "请输入通道名称", trigger: "change" }
         ],
         type: [
@@ -164,7 +193,9 @@ export default {
         modifyOperateNo: [
           { required: true, message: "请输入停车场名称", trigger: "change" }
         ]
-      }
+      },
+      regionCodeList: [],
+      GateCodeList: []
     };
   },
   methods: {
@@ -186,7 +217,58 @@ export default {
     },
     handleClose() {
       this.$parent.visibleFlag = false;
+    },
+    //选择停车场得到区域
+    chooseParkCode(val) {
+      // this.currentData.regionCode =""
+      const reqData = {
+        park_code: val
+      };
+      queryRegionCode(
+        reqData,
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          // this.regionCodeList = [];
+          let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+          this.regionCodeList = regionCodeList;
+        } else {
+        }
+      });
+    },
+    //选择区域得到通道
+    chooseRegionCode(val) {
+      // this.form.
+      const reqData = {
+        park_code: this.currentData.parkCode,
+        region_code: val
+      };
+      queryGate(
+        reqData,
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          let GateCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+          this.GateCodeList = GateCodeList;
+        } else {
+        }
+      });
     }
+  },
+  computed: {
+    ...mapState(["parkCodeList", "userLogin"])
+  },
+  mounted() {
+    saveUserLogin();
+    getCutoffReason({
+      category_en: "except_open_gate"
+    }).then(res => {
+      if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+        this.abnormal = res.data.ANSWERS[0].ANS_COMM_DATA;
+      }
+    });
   }
 };
 </script>

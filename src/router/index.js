@@ -9,7 +9,7 @@ Router.prototype.push = function push(location) {
 
 Vue.use(Router)
 
-export default new Router({
+ const router= new Router({
   routes: [
     {
       path: "/",
@@ -73,5 +73,8 @@ export default new Router({
     { path: "**", redirect: { name: "longcutoff" } }
 
 
-  ]
+  ],
+  // mode:"history"
 })
+
+export default router;

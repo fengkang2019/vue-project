@@ -34,16 +34,16 @@ const CommonUrl =process.env.serverUrlPark ;
     });
 
     enterpriseURL = axios.create({
-		baseURL: CommonUrl + "/kesb/api"
+		baseURL: BASE_URL + "/kesb/api"
 	});
 
     agentTreeURL = axios.create({
-		baseURL: CommonUrl + "/kesb/api/ent/tree"
+		baseURL: BASE_URL + "/kesb/api/ent/tree"
 	});
 
     baseJavaUrl = BASE_URL + '/fly-park';
 
-    baseJavaUrlG = CommonUrl + "/cloud-park";
+    baseJavaUrlG = BASE_URL + "/cloud-park";
 
 export {
     kesbapi,

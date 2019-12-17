@@ -2,15 +2,15 @@ import { commodRequest } from '../commodRequest'
 import { kesbURL } from '@/utils/api.js'
 
 /*
-功能代码:81001004
-功能名称:queryDayParkSerial_EX
-功能描述:开闸原因
+功能代码:85103014
+功能名称:queryGate  
+功能描述:根据parkCode查询通道
 */
-function getCutoffReason(reqData, custId, session) {
+function queryGate(reqData, custId, session) {
     return kesbURL({
         method: 'post',
         url: "",
-        data: JSON.stringify(commodRequest("81001004", reqData, custId, session))
+        data: JSON.stringify(commodRequest("85103014", reqData, custId, session))
     })
         .then(function (res) {
 
@@ -22,4 +22,4 @@ function getCutoffReason(reqData, custId, session) {
 }
 
 
-export { getCutoffReason }
+export { queryGate }

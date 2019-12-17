@@ -56,9 +56,20 @@
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="停车场" label-width="80px">
-              <el-select v-model="form.parkCode" clearable placeholder="请输入停车场名称" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+              <el-select
+                @change="chooseParkCode(form.parkCode)"
+                v-model="form.parkCode"
+                clearable
+                placeholder="请输入停车场名称"
+                size="small"
+              >
+                <el-option value label="全部"></el-option>
+                <el-option
+                  v-for="(item,i) in parkCodeList"
+                  :key="i"
+                  :value="item.park_code"
+                  :label="item.full_name"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -67,8 +78,13 @@
           <div class="grid-content bg-purple">
             <el-form-item label="区域" label-width="80px">
               <el-select v-model="form.regionCode" clearable placeholder="请选择区域" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option value label="全部"></el-option>
+                <el-option
+                  v-for="(item,i) in regionCodeList"
+                  :key="i"
+                  :value="item.region_code"
+                  :label="item.name"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -112,10 +128,7 @@
         <el-col :span="7">
           <div class="grid-content bg-purple">
             <el-form-item label="客服人员">
-              <el-select v-model="form.userNo" clearable placeholder="请选择客服人员" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
-              </el-select>
+              <el-select v-model="form.userNo" clearable placeholder="请选择客服人员" size="small"></el-select>
             </el-form-item>
           </div>
         </el-col>
@@ -180,12 +193,7 @@
       </el-col>
     </el-row>
     <el-row class="downRow2" v-if="value==1">
-      <el-table
-        :data="tableData"
-        border
-        style="width: 100%"
-        :fit="true"
-      >
+      <el-table :data="tableData" border style="width: 100%" :fit="true">
         <el-table-column width="60" fixed label="序号">
           <template slot-scope="scope">
             <span>{{(form.current-1)*form.size+ scope.$index+1}}</span>
@@ -194,7 +202,11 @@
         <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
         <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
-        <el-table-column fixed prop="type" label="呼叫类型"></el-table-column>
+        <el-table-column fixed prop="type" label="呼叫类型">
+          <template slot-scope="scope">
+            <span>{{scope.type=="1"?"按键呼叫":"自动呼叫"}}</span>
+          </template>
+        </el-table-column>
         <el-table-column :formatter="formatter" fixed prop="callTime" label="呼入时间"></el-table-column>
         <el-table-column :formatter="formatter3" fixed prop="status" label="接听状态"></el-table-column>
         <el-table-column fixed prop="waitTime" label="接听等待时长"></el-table-column>
@@ -228,6 +240,8 @@ import Bar from "@/components/echarts/Bar.vue";
 import { chooseDate } from "@/utils";
 import { baseJavaUrl, kesbJavaURL, service } from "@/utils/api";
 import { commodRequest } from "@/request/commodRequest";
+import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
+import { saveUserLogin } from "@/utils";
 export default {
   components: { Pie, Bar },
   data() {
@@ -273,7 +287,8 @@ export default {
         { value: 0, name: "1分钟~2分钟" },
         { value: 0, name: "2分钟~4分钟" },
         { value: 0, name: "4分钟以上" }
-      ]
+      ],
+      regionCodeList: []
     };
   },
   methods: {
@@ -287,6 +302,26 @@ export default {
       this.searchRecord();
     },
     changeTime(value) {},
+    //选择停车场
+    chooseParkCode(val) {
+      this.form.regionCode =""
+      const reqData = {
+        park_code: val
+      };
+      queryRegionCode(
+        reqData,
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          this.regionCodeList = [];
+          let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+          this.regionCodeList = regionCodeList;
+        } else {
+
+        }
+      });
+    },
     handleClick(row) {
       console.log(row);
     },
@@ -355,6 +390,9 @@ export default {
         type: this.form.type,
         userNo: this.form.userNo
       };
+      if (this.value == "2") {
+        reqData.size = "";
+      }
       this.reWriteDatas();
       console.log(reqData);
       this.$axios.post("/pagerSelect/searchRecord", reqData).then(res => {
@@ -363,7 +401,7 @@ export default {
           this.form.size = size;
           this.form.current = current;
           this.form.total = total;
-          this.tableData =records;
+          this.tableData = records;
         } else {
           return false;
         }
@@ -412,7 +450,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(["data"])
+    ...mapState(["parkCodeList", "userLogin"])
   },
   watch: {
     tableData: function(val) {
@@ -451,13 +489,17 @@ export default {
         }
       });
     }
+  },
+  mounted() {
+    saveUserLogin(this);
+    // console.log(this.$store.state.parkCodeList);
   }
 };
 </script>
 
 <style lang="scss" >
 #call {
-  height: 100%;
+  height: 100vh;
   .downRow {
     margin-top: 10px;
     background: #f2f3f7;
@@ -466,9 +508,42 @@ export default {
       height: 250px;
     }
   }
+  .form {
+    background: #fff;
+    padding: 10px;
+    .el-row {
+      background: #fff;
+      padding: 5px;
+      .el-col {
+        background: #fff;
+        height: 40px;
+        line-height: 40px;
+        .bg-purple-dark {
+          background: #fff;
+          .bg-purple {
+            background: #fff;
+            .bg-purple-light {
+              background: #fff;
+              .grid-content {
+                border-radius: 4px;
+                min-height: 40px;
+                background: #fff;
+                line-height: 40px;
+                .row-bg {
+                  background: #fff;
+                  .el-input {
+                    margin-top: 5px;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   .downRow2 {
     margin-top: 10px;
-    // height: 490px;
     padding: 10px;
     background: #fff;
     .cell {
@@ -489,41 +564,6 @@ export default {
 .export {
   text-align: right;
 }
-
-.form {
-  background: #fff;
-  .el-row {
-    background: #fff;
-    padding: 5px;
-    .el-col {
-      background: #fff;
-      height: 40px;
-      line-height: 40px;
-      .bg-purple-dark {
-        background: #fff;
-        .bg-purple {
-          background: #fff;
-          .bg-purple-light {
-            background: #fff;
-            .grid-content {
-              border-radius: 4px;
-              min-height: 40px;
-              background: #fff;
-              line-height: 40px;
-              .row-bg {
-                background: #fff;
-                .el-input {
-                  margin-top: 5px;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
 .btn {
   background: #3e549d;
 }

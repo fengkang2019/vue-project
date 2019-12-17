@@ -325,6 +325,7 @@ export default {
       justify-content: flex-end;
       align-items: center;
       font-size: 12px;
+      padding: 10px;
       span {
         margin-left: 10px;
       }
@@ -345,7 +346,59 @@ export default {
       }
     }
   }
-
+  .contentRow {
+    background: #fff;
+    height: 260px;
+    .contentCol {
+      padding: 10px;
+      .contentDiv {
+        width: 100%;
+        height: 100%;
+        background: #f6f6f6;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        text-align: center;
+        position: relative;
+        img {
+          margin-top: 10px;
+        }
+        p {
+          width: 100%;
+          text-align: left;
+          text-indent: 3rem;
+          line-height: 20px;
+        }
+        p:nth-child(2n) {
+          font-weight: 700;
+        }
+        div.hoverDiv {
+          position: absolute;
+          background: #8a8a8a;
+          width: 100%;
+          height: 60%;
+          bottom: 0;
+          left: 0;
+          border-bottom-left-radius: 10px;
+          border-bottom-right-radius: 10px;
+          border: 1px solid #e0e0e0;
+          display: none;
+        }
+      }
+      div.hoverDiv > p:first-child {
+        margin-top: 10px;
+      }
+      div.hoverDiv > p:nth-child(2n + 1) {
+        font-weight: 700;
+      }
+      div.hoverDiv > p:nth-child(2n) {
+        font-weight: 500;
+      }
+      .grid-content:hover div.hoverDiv {
+        display: block;
+        color: #fff;
+      }
+    }
+  }
   .form {
     font-size: 12px;
     .el-row {
@@ -382,59 +435,6 @@ export default {
   }
   .el-input {
     margin-top: 5px;
-  }
-}
-.contentRow {
-  background: #fff;
-  height: 260px;
-  .contentCol {
-    padding: 10px;
-    .contentDiv {
-      width: 100%;
-      height: 100%;
-      background: #f6f6f6;
-      border-radius: 10px;
-      border: 1px solid #e0e0e0;
-      text-align: center;
-      position: relative;
-      img {
-        margin-top: 10px;
-      }
-      p {
-        width: 100%;
-        text-align: left;
-        text-indent: 3rem;
-        line-height: 20px;
-      }
-      p:nth-child(2n) {
-        font-weight: 700;
-      }
-      div.hoverDiv {
-        position: absolute;
-        background: #8a8a8a;
-        width: 100%;
-        height: 60%;
-        bottom: 0;
-        left: 0;
-        border-bottom-left-radius: 10px;
-        border-bottom-right-radius: 10px;
-        border: 1px solid #e0e0e0;
-        display: none;
-      }
-    }
-    div.hoverDiv > p:first-child {
-      margin-top: 10px;
-    }
-    div.hoverDiv > p:nth-child(2n + 1) {
-      font-weight: 700;
-    }
-    div.hoverDiv > p:nth-child(2n) {
-      font-weight: 500;
-    }
-    .grid-content:hover div.hoverDiv {
-      display: block;
-      color: #fff;
-    }
   }
 }
 </style>

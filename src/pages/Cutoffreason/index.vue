@@ -1,7 +1,7 @@
 <template>
   <div id="cutoffreason">
     <el-form label-position="center" ref="form" :model="form" class="form">
-      <el-row >
+      <el-row>
         <el-col :span="20">
           <div class="grid-content bg-purple">
             <el-radio-group v-model="value" size="small" fill="#3e549d">
@@ -57,8 +57,8 @@
           <div class="grid-content bg-purple">
             <el-form-item label="停车场" label-width="80px">
               <el-select v-model="form.parkCode" clearable placeholder="请输入停车场名称" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option value="" label="全部"></el-option>
+                <!-- <el-option v-if="(item,i) in parkCodeList" :key="i" :value="item.park_code" :label="item.full_name"></el-option> -->
               </el-select>
             </el-form-item>
           </div>
@@ -152,12 +152,13 @@
         ></el-pagination>
       </div>
     </el-row>
-    <el-row  class="chartsRow" v-if="value==2">
+
+    <el-row class="chartsRow" v-if="value==2">
       <el-col :span="24">
         <Bar chartId="Bar2" height="100%" width="100%" text="开闸次数统计" />
       </el-col>
     </el-row>
-    <el-row class="chartsRow"  v-if="value==2" type="flex" justify="space-between">
+    <el-row class="chartsRow" v-if="value==2" type="flex" justify="space-between">
       <el-col style="width:49.5%">
         <Pie chartId="Pie5" height="100%" width="100%" text="异常开闸时段分析" />
       </el-col>
@@ -165,6 +166,7 @@
         <Pie chartId="Pie6" height="100%" width="100%" text="异常开闸车牌类型分析" />
       </el-col>
     </el-row>
+    <LookImage :imageVisible="imageVisible" />
   </div>
 </template>
 
@@ -172,9 +174,12 @@
 import Pie from "@/components/echarts/Pie.vue";
 import Bar from "@/components/echarts/Bar.vue";
 import { chooseDate } from "@/utils";
+import LookImage from "./LookImage";
+import { mapState } from "vuex";
+import { saveUserLogin } from "@/utils";
 
 export default {
-  components: { Pie, Bar },
+  components: { Pie, Bar, LookImage },
   data() {
     return {
       value: "1",
@@ -204,7 +209,8 @@ export default {
         }
       ],
       currentPage: 1,
-      pagesize: 10
+      pagesize: 10,
+      imageVisible: false
     };
   },
   methods: {
@@ -266,8 +272,14 @@ export default {
     },
     //查看图片
     lookPic(val) {
-      console.log(val);
+      this.imageVisible = true;
     }
+  },
+  computed:{
+    ...mapState(["userLogin","parkCodeList"])
+  },
+  mounted() {
+    saveUserLogin();
   }
 };
 </script>
@@ -284,6 +296,13 @@ export default {
     background: #ececec;
     .el-col {
       height: 235px;
+    }
+  }
+  .form {
+    padding: 10px;
+    background: #fff;
+    .el-row {
+      padding: 5px;
     }
   }
   .tableRow {

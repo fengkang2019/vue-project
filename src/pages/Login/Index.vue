@@ -89,14 +89,12 @@ export default {
               })
             );
           }
-
           const reqData = {
             login_from_type: "51",
             usr_code: login.usr_code,
             trade_pwd: md5(md5(login.trade_pwd) + 12345678)
           };
           acctCustLogin(reqData, "0", "").then(res => {
-            // console.log(res);
             if (typeof res != "object") {
               this.$message.error(res);
               return false;
@@ -109,10 +107,17 @@ export default {
                 ])
                 .then(
                   this.$axios.spread(function(acct, agentTree, role) {
-                    console.log(acct, agentTree, role);
+                    let parkCodeList =acct.filter((item)=>{
+                      return item.type ==4
+                    })
+                   
+                    that.$store.commit("saveParkCodeList",parkCodeList)
                   })
                 );
-
+              // that.$axios.post("/pagerSelect/getDeviceState",{
+              //   size:100,
+              //   current:1
+              // })
               // that.$axios
               //   .get(
               //     baseJavaUrlG +
@@ -148,8 +153,6 @@ export default {
           deviceObj.action =deviceList[i].action;
           deviceLists.push(deviceObj);
         }
-        console.log(deviceLists)
-
       };
       this.$store.commit("saveDeviceLists", deviceLists);
       this.$dhweb.onLogin = function(data) {
@@ -208,7 +211,6 @@ export default {
       return acctQueryOperatorByName(reqData, custId, session);
     }
   },
-
   mounted() {
     if (sessionStorage.getItem("account")) {
       this.login.usr_code = JSON.parse(sessionStorage.getItem("account")).user;

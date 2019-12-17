@@ -70,33 +70,33 @@
               </el-menu-item-group>
             </el-submenu>
             <!-- 用户反馈 -->
-            <el-submenu index="3">
+            <!-- <el-submenu index="3">
               <template slot="title">
                 <i class="el-icon-chat-dot-square"></i>
                 <span>用户反馈</span>
-              </template>
-              <el-menu-item-group>
+              </template> -->
+              <!-- <el-menu-item-group>
                 <el-menu-item index="3-1">选项2</el-menu-item>
-              </el-menu-item-group>
-              <el-submenu index="3-2">
+              </el-menu-item-group> -->
+              <!-- <el-submenu index="3-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="3-2-1">选项1</el-menu-item>
-              </el-submenu>
-            </el-submenu>
+              </el-submenu> -->
+            <!-- </el-submenu> -->
             <!-- 工单中心 -->
-            <el-submenu index="4">
+            <!-- <el-submenu index="4">
               <template slot="title">
                 <i class="el-icon-document"></i>
                 <span>工单中心</span>
-              </template>
-              <el-menu-item-group>
+              </template> -->
+              <!-- <el-menu-item-group>
                 <el-menu-item index="4-1">选项2</el-menu-item>
-              </el-menu-item-group>
-              <el-submenu index="4-2">
+              </el-menu-item-group> -->
+              <!-- <el-submenu index="4-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="4-2-1">选项1</el-menu-item>
-              </el-submenu>
-            </el-submenu>
+              </el-submenu> -->
+            <!-- </el-submenu> -->
             <!-- 人员设置 -->
             <el-submenu index="5">
               <template slot="title">
@@ -108,19 +108,19 @@
               </el-menu-item-group>
             </el-submenu>
             <!-- 系统设置 -->
-            <el-submenu index="6">
+            <!-- <el-submenu index="6">
               <template slot="title">
                 <i class="el-icon-setting"></i>
                 <span>系统设置</span>
-              </template>
-              <el-menu-item-group>
+              </template> -->
+              <!-- <el-menu-item-group>
                 <el-menu-item index="6-1">选项2</el-menu-item>
-              </el-menu-item-group>
-              <el-submenu index="6-2">
+              </el-menu-item-group> -->
+              <!-- <el-submenu index="6-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="6-2-1">选项1</el-menu-item>
-              </el-submenu>
-            </el-submenu>
+              </el-submenu> -->
+            <!-- </el-submenu> -->
           </el-menu>
         </el-aside>
         <el-main>
@@ -174,7 +174,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .main {
   width: 100%;
   height: 100%;
