@@ -24,7 +24,7 @@
         </el-form-item>
         <el-form-item label="性别:">
           <el-radio-group v-model="currentData.gender">
-            <el-radio :key="1">男</el-radio>
+            <el-radio :label="1">男</el-radio>
             <el-radio :label="2">女</el-radio>
           </el-radio-group>
         </el-form-item>
@@ -113,7 +113,7 @@ export default {
         if (val) {
           if (this.type == 0) {
             const reqData = {
-              cust_id: "8010000000001",
+              cust_id:  this.$store.state.userLogin.cust_id,
               gender: currentData.gender,
               opername: currentData.opername,
               operroles: "10007",

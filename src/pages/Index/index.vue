@@ -144,18 +144,18 @@ export default {
   },
   methods: {
     handleOpen(key, keyPath) {
-      console.log(key, keyPath);
+      // console.log(key, keyPath);
     },
     handleClose(key, keyPath) {
-      console.log(key, keyPath);
+      // console.log(key, keyPath);
     },
     selectOptions(index, indexPath) {
-      console.log(index, indexPath);
-      console.log(this.active);
+      // console.log(index, indexPath);
+      // console.log(this.active);
     },
     loginOut(val) {
       if (val == "loginOut") {
-        console.log(this.$route.name);
+        // console.log(this.$route.name);
         this.$store.commit("saveRoute", this.$route.name);
         this.$router.push({ name: "login" });
         this.$dhweb.logout(this.$store.state.loginHandle);

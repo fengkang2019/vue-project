@@ -23,11 +23,11 @@
                     </p>
                     <p>
                       <span>停车场:</span>
-                      <span>{{getFullName(item.parkCode)}}</span>
+                      <span>{{item.parkName}}</span>
                     </p>
                     <p>
                       <span>区域:</span>
-                      <span>{{getRegionName(item.parkCode,item.regionCode)}}</span>
+                      <span>{{item.regionName}}</span>
                     </p>
                   </div>
                   <div class="hidden" v-show="!state1">
@@ -58,11 +58,11 @@
                     </p>
                     <p>
                       <span>停车场:</span>
-                      <span>{{getFullName(item.parkCode)}}</span>
+                      <span>{{item.parkName}}</span>
                     </p>
                     <p>
                       <span>区域:</span>
-                      <span>{{getRegionName(item.parkCode,item.regionCode)}}</span>
+                      <span>{{item.regionName}}</span>
                     </p>
                   </div>
                 </el-tab-pane>
@@ -83,15 +83,15 @@
                 </p>
                 <p>
                   <span>呼入时间:</span>
-                  <span>{{formatTime(item.callTime)}}</span>
+                  <span>{{formatTime2(item.callTime)}}</span>
                 </p>
                 <p>
                   <span>停车场:</span>
-                  <span>{{getFullName(item.parkCode)}}</span>
+                  <span>{{item.parkName}}</span>
                 </p>
                 <p>
                   <span>区域:</span>
-                  <span>{{getRegionName(item.parkCode,item.regionCode)}}</span>
+                  <span>{{item.regionName}}</span>
                 </p>
                 <el-button @click="answer(item)" :disabled="isAnswered">
                   <span class="iconfont icon-dianhua"></span>
@@ -106,10 +106,10 @@
               <div class="deviceStatu">
                 <span></span>
                 <span>在线:</span>
-                <span>{{30}}</span>
+                <span>{{onlineCount}}</span>
                 <span></span>
                 <span>离线:</span>
-                <span>{{20}}</span>
+                <span>{{offlineCount}}</span>
               </div>
               <el-tree
                 :data="deviceList"
@@ -233,15 +233,15 @@
                 </p>
               </el-col>
               <el-col v-if="!parkState" class="inCar2">
-                <span class="iconfont icon-changyongtubiao-xianxingdaochu-zhuanqu-"></span>
-                <span>暂无停车记录</span>
+                <div class="iconfont icon-changyongtubiao-xianxingdaochu-zhuanqu-"></div>
+                <p>暂无停车记录</p>
               </el-col>
             </el-row>
             <el-row class="detail">
               <el-col v-if="state4">
                 <p>
                   <span>订单详情:</span>
-                  <span>{{carInfo.commodity?formatTime(carInfo.commodity.ordertime) +" "+ carInfo.commodity.payType +" "+"支付渠道:"+ carInfo.commodity.orderstate:'无'}}</span>
+                  <span>{{carInfo.commodity?formatTime(carInfo.commodity.ordertime) +" "+ formatPayType(carInfo.commodity.payType) +" "+"支付渠道:"+ formarOrderState(carInfo.commodity.orderstate):'无'}}</span>
                 </p>
                 <p>
                   <span>月卡车详情:</span>
@@ -261,7 +261,10 @@
                 </p>
                 <p>
                   <span>车位详情:</span>
-                  <a @click="findDetail()">{{carInfo.member?carInfo.member.seatNum+"车位":"无"}}</a>
+                  <a
+                    @click="findDetail()"
+                    class="chewei"
+                  >{{carInfo.member?carInfo.member.seatNum+"车位":"无"}}</a>
                 </p>
               </el-col>
             </el-row>
@@ -331,16 +334,14 @@ export default {
       detailFlag: false,
       state1: false,
       state2: false,
-      state3: true,
       state4: false,
       //设备对应车场信息
       parkInfo: {},
       //正在接听的记录信息
       recordsInfo: {},
-      //登录句柄
-      // loginHandle: "",
-      //设备id
-      devId: "",
+
+      //接听得到设备信息
+      devicesInfo: [],
       //车卡信息
       carInfo: {},
       // 车位信息
@@ -361,27 +362,28 @@ export default {
       deviceList: [
         {
           label: "武汉无人值守项目",
-
-          children: this.$store.state.deviceLists
+          children: []
         }
       ],
       parkState: false,
       restaurants: [],
       showCarId: "",
-      isAnswered: false
+      isAnswered: false,
+      onlineCount:0,
+      offlineCount:0,
     };
   },
   methods: {
     //切换接听状态
-    handleClick: function() {
+    handleClick() {
       console.log(111);
     },
     //确认开闸
-    onSubmit: function() {
+    onSubmit() {
       this.cutOff();
     },
     //详情表格
-    findDetail: function() {
+    findDetail() {
       this.detailFlag = true;
       const that = this;
       this.$axios
@@ -394,13 +396,22 @@ export default {
         });
     },
     //挂断
-    hangup: function(item) {
+    hangup(item) {
       console.log("挂断电话");
-      this.changeStatus(2, item);
+      // this.changeStatus(2, item);
       this.stopRT();
+      this.records2 = [];
+      this.records2.push(item);
+      this.records1 = [];
+      this.state4 = false;
+      this.state2 = false;
+      this.isAnswered = false;
+      this.form.carNum = "";
+      this.showCarId = "";
     },
     //接听
-    answer: function(item) {
+    answer(item) {
+      console.log("接听");
       this.recordsInfo = item;
       let that = this;
       this.$axios
@@ -410,24 +421,28 @@ export default {
           devNo: item.devNo
         })
         .then(res => {
-          if (res) {
+          if (res.data.length > 0) {
+            console.log(res);
             this.form.carNumColor = "1";
-            that.state1 = true;
-            that.state4 = true;
-            that.state3 = false;
+            this.state1 = true;
+            this.state4 = true;
+            this.state2 = true;
             this.parkState = true;
             this.isAnswered = true;
-            that.devId = res.data.devId;
-            that.changeStatus(1, item);
-            that.searchDevParkInfo(item);
-            that.playRT();
+            this.devicesInfo = res.data;
+            this.records1 = [];
+            this.records1.push(item);
+            //查询车卡信息
+            this.searchDevParkInfo(item);
+            this.playRT();
           } else {
+            this.$message.error("此设备暂无数据,无法接听")
             return false;
           }
         });
     },
     //点击刷新
-    resetForm: function(form) {
+    resetForm(form) {
       console.log(this.$refs.carform);
       this.$refs.carform.resetFields();
     },
@@ -444,11 +459,13 @@ export default {
       });
     },
     inputCarId(value) {
+      let that = this;
       if (value.length >= 3) {
-        console.log("查车牌列表");
+        console.log("查车牌列表" + this.records1[0].parkCode);
         queryCarId(
           {
-            car_id: value
+            car_id: value,
+            park_code: this.records1[0].parkCode
           },
           this.$store.state.userLogin.cust_id,
           this.$store.state.userLogin.session
@@ -468,28 +485,16 @@ export default {
         });
       }
     },
-    //////
+    //返回 自动补充列表
     querySearch(queryString, cb) {
-      var restaurants = this.restaurants;
-      var results = queryString
-        ? restaurants.filter(this.createFilter(queryString))
-        : restaurants;
+      let restaurants = this.restaurants;
+      let results = queryString ? restaurants : "";
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
-    createFilter(queryString) {
-      return restaurant => {
-        return (
-          restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) ===
-          0
-        );
-      };
-    },
+
     handleSelect(item) {
-      console.log(item);
-    },
-    loadAll() {
-      return [];
+      this.searchInCarInfos(item.value);
     },
     click1(e) {
       console.log(e.target.innerHTML);
@@ -523,7 +528,7 @@ export default {
     currentTime() {
       return this.$moment().format("YYYYMMDD");
     },
-    //查询操作记录
+    //查询为接听数据
     searchRecord(status) {
       let that = this;
       this.$axios
@@ -540,35 +545,6 @@ export default {
           }
         });
     },
-    //改变 呼叫状态
-    changeStatus(status, item) {
-      let that = this;
-      this.$axios
-        .post("/pagerUpdate/updateRecord", {
-          id: item.id,
-          status: status
-        })
-        .then(res => {
-          if (res) {
-            if (status == 1) {
-              that.records1 = [];
-              that.records1.push(item);
-            } else if (status == 2) {
-              that.records2 = [];
-              that.records2.push(item);
-              //让接听中为空
-              that.records1 = [];
-              that.state4 = false;
-              this.isAnswered = false;
-              that.form.carNum = "";
-              that.showCarId = "";
-            }
-            that.searchRecord(0);
-          } else {
-            return false;
-          }
-        });
-    },
     //查询设备对应停车信息
     searchDevParkInfo(item) {
       let that = this;
@@ -579,12 +555,12 @@ export default {
           devNo: item.devNo
         })
         .then(res => {
-          if (res) {
+          if (JSON.stringify(res) != "{}") {
             console.log(res);
             that.parkInfo = res.data;
             console.log(that.parkInfo);
             that.searchCarInfo();
-            that.searchInCarInfos();
+            that.searchInCarInfos(that.parkInfo.carId, that.parkInfo.carType);
           } else {
             return false;
           }
@@ -605,15 +581,10 @@ export default {
         result: "90",
         outoperate: "1",
         payobject: "",
-        // car_id: res.data.carId,
-        car_id: "鄂A603UU",
-        // p_type: "2",
+        car_id: carId,
         serialtype: "1"
       };
-      // console.log(carId);
-      if (carId) {
-        reqData.car_id = carId;
-      }
+
       getqueryDayParkSerialEX(
         reqData,
         this.$store.state.userLogin.cust_id,
@@ -621,6 +592,7 @@ export default {
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           that.carInfo2 = res.data.ANSWERS[0].ANS_COMM_DATA;
+          console.log(this.carInfo2);
           if (that.carInfo2.length > 0) {
             console.log(that.carInfo2[0]);
             this.showCarId = that.carInfo2[0].car_id;
@@ -668,7 +640,6 @@ export default {
           carType: this.parkInfo.carType,
           carId: this.parkInfo.carId
         };
-
         this.$axios.post("/pagerSelect/searchCarDetail", reqData).then(res => {
           if (JSON.stringify(res.data.assetsDetail) != "{}") {
             that.carInfo = res.data;
@@ -685,26 +656,42 @@ export default {
     //播放视屏
     playRT() {
       let that = this;
-      console.log(this.$store.state.loginHandle);
-      console.log(this.devId);
+      // console.log(this.$store.state.loginHandle);
+      // console.log(this.devicesInfo[0].cameraId, this.devicesInfo[1].cameraId);
+      this.stopAllRT();
       this.$dhweb.playRT(
         $("#monitorVideo")[0],
-        this.devId,
+        this.devicesInfo[0].cameraId,
         this.$store.state.loginHandle,
         true
       );
+      this.$dhweb.playRT(
+        $("#callerVideo")[0],
+        this.devicesInfo[0].monitorId,
+        this.$store.state.loginHandle,
+        true
+      );
+
       this.$dhweb.onPlayRT = function(data) {
         if (data.error != "success") {
+          console.log("视屏打开成功");
         }
       };
     },
     //关闭视屏
     stopRT() {
-      this.$dhweb.stopRT(this.devId, this.$store.state.loginHandle);
-      this.state3 = true;
-      this.parkState = false;
+      this.$dhweb.stopRT(
+        this.devicesInfo[0].cameraId,
+        this.$store.state.loginHandle
+      );
+      this.$dhweb.stopRT(
+        this.devicesInfo[0].monitorId,
+        this.$store.state.loginHandle
+      );
 
+      this.parkState = false;
       $("#monitorVideo").attr("src", "");
+      $("#callerVideo").attr("src", "");
     },
     //分转化为时
     timeStamp(StatusMinute) {
@@ -724,64 +711,134 @@ export default {
       //三元运算符 传入的分钟数不够一分钟 默认为0分钟，else return 运算后的StatusMinute
       return StatusMinute == "" ? "0分钟" : StatusMinute;
     },
+    //开始查找为接听数据
     startSearch() {
       this.timer = setInterval(() => {
-        this.searchRecord(2);
+        this.searchRecord(0);
       }, 3000);
     },
     //开闸
     cutOff() {
       this.$dhweb.doControl(this.devId, this.$store.state.loginHandle, 1);
     },
-    //打开 监控摄像头
-    handleNodeClick(data) {
-      console.log(data);
-      console.log(
-        $("#monitorVideo")[0],
-        data.devId,
-        this.$store.state.loginHandle
-      );
+    //主动打开 监控摄像头
+    handleNodeClick(device) {
+      console.log("主动打开摄像头");
+      let that =this;
       this.state2 = true;
+      this.stopAllRT();
       this.$dhweb.playRT(
         $("#callerVideo")[0],
-        data.devId,
+        device.devId,
         this.$store.state.loginHandle,
         true
       );
-    },
-    //根据parkCode得到fullname
-    getFullName(parkCode) {
-      let fullName = this.$store.state.parkCodeList.filter(item => {
-        return item.park_code == parkCode;
-      });
-      return fullName.length > 0 ? fullName[0].full_name : "暂无";
-    },
-    //根据regionCode得到regionName
-    getRegionName(parkCode, regionCode) {
-      const reqData = {
-        park_code: parkCode
-      };
-      queryRegionCode(
-        reqData,
-        this.$store.state.userLogin.cust_id,
-        this.$store.state.userLogin.session
-      ).then(res => {
-        let regionNames = [];
-        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-          let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
-          regionNames = regionCodeList.filter(item => {
-            return (item.region_code = regionCode);
+      this.$dhweb.onPlayRT = function(data) {
+        console.log(data);
+        if (data.error == "success") {
+          console.log("视屏打开成功");
+          that.$axios.post("/pagerInsert/insertRecord", {
+            parkCode: device.parkCode,
+            regionCode: device.regionCode,
+            type: "2",
+            status: "1",
+            devNo: device.devNo,
+            userNo: that.$store.state.userLogin.ent_name,
+            callTime: that.$moment().format("YYYYMMDDHHmmss"),
+            startTime: that.$moment().format("YYYYMMDDHHmmss"),
+            endTime:"",
+            remark: ""
           });
         }
-        return regionNames.length > 0 ? regionNames[0].name : "暂无";
-      });
+      };
+    },
+    //获取所有设备状态和id
+    getDevices() {
+      this.$axios
+        .post("/pagerSelect/getDeviceState", {
+          devNo: "",
+          current: 1,
+          size: 999
+        })
+        .then(res => {
+          if (res.data.records.length > 0) {
+            let datas = res.data.records;
+            this.onlineCount =datas[0].online;
+            this.offlineCount =datas[0].offline;
+            let deviceLists = [];
+            for (var i = 0; i < datas.length; i++) {
+              let obj = {};
+              obj.label = datas[i].name;
+              obj.devId = datas[i].cameraId;
+              obj.action = datas[i].state;
+              obj.parkCode=datas[i].parkCode;
+              obj.regionCode=datas[i].regionCode;
+              obj.devNo =datas[i].devNo;
+              deviceLists.push(obj);
+            }
+            this.deviceList[0].children = deviceLists;
+          }
+        });
+    },
+    //关闭所有设备视屏
+    stopAllRT() {
+      console.log(this.deviceList[0].children.length);
+      for (var i = 0; i < this.deviceList[0].children.length; i++) {
+        this.$dhweb.stopRT(
+          this.deviceList[0].children[i].devId,
+          this.$store.state.loginHandle
+        );
+      }
+    },
+    //交易状态
+    formarOrderState(val) {
+      switch (val) {
+        case 1:
+          return "带确认";
+        case 2:
+          return "确认";
+        case 3:
+          return "待支付";
+        case 4:
+          return "支付成功";
+        case 5:
+          return "取消";
+        case 6:
+          return "待退款";
+        case 7:
+          return "退款成功";
+        case 8:
+          return "失败";
+        case 9:
+          return "待发货";
+        case 10:
+          return "已发货";
+        case 11:
+          return "已收货";
+        default:
+          return "交易完成";
+      }
+      // ("1待确认 2确认 3待支付 4支付成功 5取消 6待退款 7退款成功 8失败 9待发货 10 已发货 11待收货 12已收货 13交易完成");
+      // ("1 微信 2 支付宝");
+    },
+    formatPayType(val) {
+      switch (val) {
+        case 1:
+          return "微信";
+        case 2:
+          return "支付宝";
+        default:
+          return "";
+      }
     }
   },
 
   created() {
     this.startSearch();
+    this.getDevices();
   },
   mounted() {
+    console.log(this.$store.state.userLogin)
     saveUserLogin(this);
     getCutoffReason({
       category_en: "except_open_gate"
@@ -799,13 +856,8 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     if (from.name == "longcutoff") {
-      let deviceLength = this.$store.state.deviceLists.length;
-      for (var i = 0; i < deviceLength; i++) {
-        this.$dhweb.stopRT(
-          this.$store.state.deviceLists[i].devId,
-          this.$store.state.loginHandle
-        );
-      }
+      this.stopAllRT();
+      // this.stopRT();
       this.isAnswered = false;
     }
     next();
@@ -838,7 +890,7 @@ $fff: #fff;
       .grid-content {
         width: $mainWdth;
         height: $mainWdth;
-        border: 1px solid #aaaaaa;
+        // border: 1px solid #aaaaaa;
         .el-row {
           height: 0.3 * $mainWdth;
           .el-col {
@@ -1284,15 +1336,13 @@ $fff: #fff;
             }
           }
           .inCar2 {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            span.icon-changyongtubiao-xianxingdaochu-zhuanqu- {
+            text-align:center;
+            div.icon-changyongtubiao-xianxingdaochu-zhuanqu- {
               font-size: 60px;
               color: #ccc;
+              margin-top:30px;
             }
-            span {
+            p {
               font-weight: 600;
               color: #ccc;
             }
@@ -1317,6 +1367,10 @@ $fff: #fff;
                 i.red {
                   color: red;
                 }
+              }
+              .chewei {
+                color: blue;
+                text-decoration: underline;
               }
             }
           }

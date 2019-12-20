@@ -1,8 +1,10 @@
 <template>
   <el-dialog
     :title="flag=='1'?'新增':flag=='2'?'编辑':'详情'"
-    :visible="visibleFlag"
+    :visible="true"
     :before-close="handleClose"
+    :opened="getRegionAndGate()"
+    width="25%"
   >
     <el-form :model="currentData" class="dialog" :disabled="flag=='3'" :rules="rules" ref="myForm">
       <el-form-item
@@ -25,7 +27,7 @@
           ></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属区域" :label-width="formLabelWidth" prop="regionCode">
+      <el-form-item label="所属区域" :label-width="formLabelWidth">
         <el-select
           @change="chooseRegionCode(currentData.regionCode)"
           size="small"
@@ -40,7 +42,7 @@
           ></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属通道" :label-width="formLabelWidth" prop="gateCode">
+      <el-form-item label="所属通道" :label-width="formLabelWidth">
         <el-select size="small" v-model="currentData.gateCode" placeholder="请输入所属通道">
           <el-option
             v-for="(item,i) in GateCodeList"
@@ -50,18 +52,20 @@
           ></el-option>
         </el-select>
       </el-form-item>
+
       <el-form-item label="设备类型" :label-width="formLabelWidth" prop="type">
         <el-select size="small" v-model="currentData.type" placeholder="请输入设备类型">
-          <el-option value="1" label="呼叫器"></el-option>
-          <el-option value="2" label="摄像头"></el-option>
-          <el-option value="3" label="LED"></el-option>
-          <el-option value="4" label="PDA"></el-option>
+          <el-option :value="1" label="呼叫器"></el-option>
+          <el-option :value="2" label="摄像头"></el-option>
+          <el-option :value="3" label="LED"></el-option>
+          <el-option :value="4" label="PDA"></el-option>
         </el-select>
       </el-form-item>
+
       <el-form-item v-show="flag!=='2'" label="设备名称" :label-width="formLabelWidth" prop="name">
         <el-input size="small" v-model="currentData.name" autocomplete="off" placeholder="请输入设备名称"></el-input>
       </el-form-item>
-      <el-form-item label="设备编号" :label-width="formLabelWidth" prop="devNo">
+      <el-form-item label="设备编号" :label-width="formLabelWidth">
         <el-input size="small" v-model="currentData.devNo" autocomplete="off" placeholder="请输入设备编号"></el-input>
       </el-form-item>
       <el-form-item v-show="flag!=='2'" label="设备型号" :label-width="formLabelWidth" prop="devModel">
@@ -72,19 +76,29 @@
           placeholder="请输入设备型号"
         ></el-input>
       </el-form-item>
-      <el-form-item label="ip地址" :label-width="formLabelWidth" prop="devIp">
-        <el-input size="small" v-model="currentData.devIp" autocomplete="off" placeholder="请输入ip地址"></el-input>
+      <el-form-item label="设备ID" :label-width="formLabelWidth" prop="cameraId">
+        <el-input
+          size="small"
+          v-model="currentData.cameraId"
+          autocomplete="off"
+          placeholder="请输入设备ID"
+        ></el-input>
+      </el-form-item>
+      <el-form-item label="监控ID" :label-width="formLabelWidth" prop="monitorId">
+        <el-input
+          size="small"
+          v-model="currentData.monitorId"
+          autocomplete="off"
+          placeholder="请输入监控ID"
+        ></el-input>
       </el-form-item>
       <el-form-item label="版本号" :label-width="formLabelWidth" prop="devVer">
         <el-input size="small" v-model="currentData.devVer" autocomplete="off" placeholder="请输入版本号"></el-input>
       </el-form-item>
       <el-form-item label="设备厂商" :label-width="formLabelWidth" prop="devCompany">
-        <el-input
-          size="small"
-          v-model="currentData.devCompany"
-          autocomplete="off"
-          placeholder="请输入设备厂商"
-        ></el-input>
+        <el-select size="small" v-model="currentData.devCompany" placeholder="请输入设备类型">
+          <el-option value="笛虎"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item label="启用日期" :label-width="formLabelWidth" prop="activeDate">
         <el-input
@@ -106,7 +120,6 @@
         v-show="flag=='3'"
         label="最后编辑日期"
         :label-width="formLabelWidth"
-        prop="heartTime"
       >
         <el-input
           size="small"
@@ -119,7 +132,6 @@
         v-show="flag=='3'"
         label="编辑人员"
         :label-width="formLabelWidth"
-        props="modifyOperateNo"
       >
         <el-input
           size="small"
@@ -130,7 +142,7 @@
       </el-form-item>
     </el-form>
     <div v-show="flag!='3'" slot="footer" class="dialog-footer">
-      <el-button size="small" @click="$parent.visibleFlag =false">取 消</el-button>
+      <el-button size="small" @click="cancel">取 消</el-button>
       <el-button size="small" type="primary" @click="dialogFormVisible(currentData)">确 定</el-button>
     </div>
   </el-dialog>
@@ -143,7 +155,7 @@ import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
 import { queryGate } from "@/request/parkRecord/queryGate";
 import { getCutoffReason } from "@/request/parkRecord/CutoffReason";
 export default {
-  props: ["visibleFlag", "flag", "currentData"],
+  props: ["visibleFlag", "flag", "currentData", "regions", "gates"],
   data() {
     return {
       formLabelWidth: "100px",
@@ -152,47 +164,29 @@ export default {
       },
       rules: {
         parkCode: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
-        ],
-        regionCode: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
-        ],
-        gateCode: [
-          { required: true, message: "请输入通道名称", trigger: "change" }
+          { required: true, message: "请输入停车场名称", trigger: "blur" }
         ],
         type: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
+          { required: true, message: "请输入设备类型", trigger: "change" }
         ],
-        name: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
-        ],
-        devNo: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
-        ],
+        name: [{ required: true, message: "请输入设备名称", trigger: "blur" }],
+    
         devModel: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
+          { required: true, message: "请输入设备型号", trigger: "blur" }
         ],
-        devIp: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
+        cameraId: [
+          { required: true, message: "请输入设备Id", trigger: "blur" }
         ],
-        devVer: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
-        ],
+        devVer: [{ message: "请输入设备版本号", trigger: "blur" }],
         devCompany: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
+          { required: true, message: "请输入厂商名称", trigger: "blur" }
         ],
         activeDate: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
+          { required: true, message: "请输入启用日期", trigger: "blur" }
         ],
         endDate: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
+          { required: true, message: "请输入到期日期", trigger: "blur" }
         ],
-        heartTime: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
-        ],
-        modifyOperateNo: [
-          { required: true, message: "请输入停车场名称", trigger: "change" }
-        ]
       },
       regionCodeList: [],
       GateCodeList: []
@@ -200,8 +194,6 @@ export default {
   },
   methods: {
     dialogFormVisible(currentData) {
-      this.$refs.myForm.validate(val => {
-        if (val) {
           if (this.flag == "1") {
             console.log("新增");
             this.$parent.confirmAdd(currentData);
@@ -209,18 +201,26 @@ export default {
             console.log("编辑");
             this.$parent.confirmEdit(currentData);
           }
+          this.regionCodeList = [];
+          this.GateCodeList = [];
           this.$parent.visibleFlag = false;
-        } else {
-          return false;
-        }
-      });
+      
+    
     },
     handleClose() {
+      this.regionCodeList = [];
+      this.GateCodeList = [];
+      console.log(11)
+      this.$parent.visibleFlag = false;
+    },
+    cancel() {
+      this.regionCodeList = [];
+      this.GateCodeList = [];
       this.$parent.visibleFlag = false;
     },
     //选择停车场得到区域
     chooseParkCode(val) {
-      // this.currentData.regionCode =""
+      this.currentData.regionCode = "";
       const reqData = {
         park_code: val
       };
@@ -230,7 +230,7 @@ export default {
         this.$store.state.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-          // this.regionCodeList = [];
+          this.regionCodeList = [];
           let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
           this.regionCodeList = regionCodeList;
         } else {
@@ -239,7 +239,7 @@ export default {
     },
     //选择区域得到通道
     chooseRegionCode(val) {
-      // this.form.
+      this.currentData.gateCode = "";
       const reqData = {
         park_code: this.currentData.parkCode,
         region_code: val
@@ -250,25 +250,64 @@ export default {
         this.$store.state.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          this.GateCodeList = [];
           let GateCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
           this.GateCodeList = GateCodeList;
         } else {
         }
       });
+    },
+    getRegionAndGate() {
+      if (this.regionCodeList.length == 0) {
+        console.log(11);
+        queryRegionCode(
+          { park_code: this.currentData.parkCode },
+          this.$store.state.userLogin.cust_id,
+          this.$store.state.userLogin.session
+        ).then(res => {
+          if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+            let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+            this.regionCodeList = regionCodeList;
+          } else {
+            return false;
+          }
+        });
+      }
+      if (this.regionCodeList.length == 0) {
+        queryGate(
+          {
+            park_code: this.currentData.parkCode,
+            region_code: this.currentData.regionCode
+          },
+          this.$store.state.userLogin.cust_id,
+          this.$store.state.userLogin.session
+        ).then(res => {
+          if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+            let GateCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+            this.GateCodeList = GateCodeList;
+          } else {
+          }
+        });
+      }
     }
   },
   computed: {
     ...mapState(["parkCodeList", "userLogin"])
   },
+  created() {
+    //得到区域信息
+    //得到通道信息
+  },
+  beforeMounte() {},
   mounted() {
-    saveUserLogin();
-    getCutoffReason({
-      category_en: "except_open_gate"
-    }).then(res => {
-      if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-        this.abnormal = res.data.ANSWERS[0].ANS_COMM_DATA;
-      }
-    });
+    saveUserLogin(this);
+    // getCutoffReason({
+    //   category_en: "except_open_gate"
+    // }).then(res => {
+    //   if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+    //     this.abnormal = res.data.ANSWERS[0].ANS_COMM_DATA;
+    //   }
+    // });
   }
 };
 </script>
@@ -280,7 +319,8 @@ export default {
     font-size: 12px;
   }
   .el-input {
-    width: 620px;
+    // width: 620px;
+    width: 203px;
   }
   .el-form-item {
     margin-bottom: 15px;

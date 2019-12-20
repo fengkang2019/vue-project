@@ -17,7 +17,7 @@
         </el-col>
       </el-row>
       <el-row>
-        <el-col :span="6">
+        <el-col :span="6" v-if="value==1">
           <div class="grid-content bg-purple">
             <el-form-item label="时间" label-width="90px">
               <el-date-picker
@@ -36,7 +36,7 @@
             </el-form-item>
           </div>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="6" v-if="value==1">
           <div class="grid-content bg-purple">
             <el-radio-group
               style="width:270px"
@@ -199,14 +199,10 @@
             <span>{{(form.current-1)*form.size+ scope.$index+1}}</span>
           </template>
         </el-table-column>
-        <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
-        <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
+        <el-table-column fixed prop="parkName" label="停车场"></el-table-column>
+        <el-table-column fixed prop="regionName" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
-        <el-table-column fixed prop="type" label="呼叫类型">
-          <template slot-scope="scope">
-            <span>{{scope.type=="1"?"按键呼叫":"自动呼叫"}}</span>
-          </template>
-        </el-table-column>
+        <el-table-column fixed :formatter="formatType" prop="type" label="呼叫类型"></el-table-column>
         <el-table-column :formatter="formatter" fixed prop="callTime" label="呼入时间"></el-table-column>
         <el-table-column :formatter="formatter3" fixed prop="status" label="接听状态"></el-table-column>
         <el-table-column fixed prop="waitTime" label="接听等待时长"></el-table-column>
@@ -288,7 +284,22 @@ export default {
         { value: 0, name: "2分钟~4分钟" },
         { value: 0, name: "4分钟以上" }
       ],
-      regionCodeList: []
+      regionCodeList: [],
+      echartData: {}
+      // answered: 0,
+      // auto: 0,
+      // button: 0,
+      // missed: 0,
+      // processFourMin: 0,
+      // processMore: 0,
+      // processSixty: 0,
+      // processThirty: 0,
+      // processTwoMin: 0,
+      // waitFourMin: 0,
+      // waitMore: 0,
+      // waitSixty: 0,
+      // waitThirty: 0,
+      // waitTwoMin: 0
     };
   },
   methods: {
@@ -296,15 +307,19 @@ export default {
       this.form.timerange = chooseDate(date, this.form.timerange);
     },
     onSubmit: function(form) {
-      this.form.startTime = form.timerange[0];
-      this.form.endTime = form.timerange[1];
-      this.form.current = 1;
-      this.searchRecord();
+      if (this.value == 1) {
+        this.form.startTime = form.timerange[0];
+        this.form.endTime = form.timerange[1];
+        this.form.current = 1;
+        this.searchRecord();
+      } else if (this.value == 2) {
+        this.searchEchartsData();
+      }
     },
     changeTime(value) {},
     //选择停车场
     chooseParkCode(val) {
-      this.form.regionCode =""
+      this.form.regionCode = "";
       const reqData = {
         park_code: val
       };
@@ -318,7 +333,6 @@ export default {
           let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
           this.regionCodeList = regionCodeList;
         } else {
-
         }
       });
     },
@@ -377,6 +391,7 @@ export default {
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => v[j]));
     },
+    //查询呼叫记录
     searchRecord() {
       const that = this;
       const reqData = {
@@ -393,8 +408,8 @@ export default {
       if (this.value == "2") {
         reqData.size = "";
       }
-      this.reWriteDatas();
-      console.log(reqData);
+      // this.reWriteDatas();
+      // console.log(reqData);
       this.$axios.post("/pagerSelect/searchRecord", reqData).then(res => {
         if (res) {
           const { records, size, current, total } = res.data;
@@ -407,8 +422,19 @@ export default {
         }
       });
     },
+    //查询统计图表
+    searchEchartsData() {
+      this.$axios
+        .post("/pagerSelect/countInfo", {
+          parkCode: this.form.parkCode
+        })
+        .then(res => {
+          if (JSON.stringify(res.data) != "{}") {
+            this.echartData = res.data;
+          }
+        });
+    },
     formatter(row) {
-      //  20191121145659
       let moment = this.$moment(row.callTime, "YYYYMMDDHHmmss");
       return moment.format("YYYY-MM-DD HH:mm:ss");
     },
@@ -425,27 +451,11 @@ export default {
         return "已处理";
       }
     },
-    //重置echarts图表数据
-    reWriteDatas() {
-      if (this.pieDatas1) {
-        this.pieDatas1.forEach(element => {
-          element.value = 0;
-        });
-      }
-      if (this.pieDatas2) {
-        this.pieDatas2.forEach(element => {
-          element.value = 0;
-        });
-      }
-      if (this.pieDatas3) {
-        this.pieDatas3.forEach(element => {
-          element.value = 0;
-        });
-      }
-      if (this.pieDatas4) {
-        this.pieDatas4.forEach(element => {
-          element.value = 0;
-        });
+    formatType(row) {
+      if (row.type == 1) {
+        return "按键呼叫";
+      } else {
+        return "自动呼叫";
       }
     }
   },
@@ -453,46 +463,28 @@ export default {
     ...mapState(["parkCodeList", "userLogin"])
   },
   watch: {
-    tableData: function(val) {
-      val.map((item, i) => {
-        if (item.status == 2) {
-          this.pieDatas1[1].value += 1;
-        } else if (item.status < 2) {
-          this.pieDatas1[0].value += 1;
-        }
-        if (item.type == 1) {
-          this.pieDatas2[0].value += 1;
-        } else {
-          this.pieDatas2[1].value += 1;
-        }
-        if (item.waitTime <= 30) {
-          this.pieDatas3[0].value += 1;
-        } else if (item.waitTime <= 60) {
-          this.pieDatas3[1].value += 1;
-        } else if (item.waitTime <= 120) {
-          this.pieDatas3[2].value += 1;
-        } else if (item.waitTime <= 240) {
-          this.pieDatas3[3].value += 1;
-        } else {
-          this.pieDatas3[4].value += 1;
-        }
-        if (item.processTime <= 30) {
-          this.pieDatas4[0].value += 1;
-        } else if (item.processTime <= 60) {
-          this.pieDatas4[1].value += 1;
-        } else if (item.processTime <= 120) {
-          this.pieDatas4[2].value += 1;
-        } else if (item.processTime <= 240) {
-          this.pieDatas4[3].value += 1;
-        } else {
-          this.pieDatas4[4].value += 1;
-        }
-      });
+    echartData: {
+      handler(val) {
+        this.pieDatas1[0].value = val.answered;
+        this.pieDatas2[0].value = val.auto;
+        this.pieDatas2[1].value = val.button;
+        this.pieDatas1[1].value = val.missed;
+        this.pieDatas4[4].value = val.processFourMin;
+        this.pieDatas4[0].value = val.processMore;
+        this.pieDatas4[2].value = val.processSixty;
+        this.pieDatas4[1].value = val.processThirty;
+        this.pieDatas4[3].value = val.processTwoMin;
+        this.pieDatas3[4].value = val.waitFourMin;
+        this.pieDatas3[0].value = val.waitMore;
+        this.pieDatas3[2].value = val.waitSixty;
+        this.pieDatas3[1].value = val.waitThirty;
+        this.pieDatas3[3].value = val.waitTwoMin;
+      }
     }
   },
   mounted() {
     saveUserLogin(this);
-    // console.log(this.$store.state.parkCodeList);
+     this.searchEchartsData()
   }
 };
 </script>

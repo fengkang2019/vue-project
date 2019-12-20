@@ -42,8 +42,9 @@
           <div class="grid-content bg-purple">
             <el-form-item label="停车场">
               <el-select v-model="form.parklot" clearable placeholder="请输入停车场名称" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option value="" label="全部"></el-option>
+
+                <el-option v-for="(item,i) in parkCodeList" :key="i" :value="item.park_code" :label="item.full_name"></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -75,6 +76,8 @@
 import Bar from "@/components/echarts/Bar.vue";
 import Pie from "@/components/echarts/Pie.vue";
 import { chooseDate } from "@/utils";
+import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
+import { saveUserLogin } from "@/utils";
 
 export default {
   components: { Bar, Pie },
@@ -104,6 +107,12 @@ export default {
       console.log(form);
     },
     changeTime(value) {}
+  },
+  computed:{
+    ...mapState(["parkCodeList"])
+  },
+  mounted(){
+    saveUserLogin();
   }
 };
 </script>

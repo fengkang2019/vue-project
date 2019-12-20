@@ -42,9 +42,20 @@
         <el-col :span="7">
           <div class="grid-content bg-purple">
             <el-form-item label="停车场">
-              <el-select v-model="form.parklot" clearable placeholder="请输入停车场名称" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+              <el-select
+                @change="choosePark(form.parkCode)"
+                v-model="form.parkCode"
+                clearable
+                placeholder="请输入停车场名称"
+                size="small"
+              >
+                <el-option value label="全部"></el-option>
+                <el-option
+                  v-for="(item,i) in parkCodeList"
+                  :key="i"
+                  :value="item.park_code"
+                  :label="item.full_name"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -52,9 +63,14 @@
         <el-col :span="7">
           <div class="grid-content bg-purple">
             <el-form-item label="区域">
-              <el-select v-model="form.area" clearable placeholder="请选择区域" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+              <el-select v-model="form.regionCode" clearable placeholder="请选择区域" size="small">
+                <el-option value label="全部"></el-option>
+                <el-option
+                  v-for="(item,i) in regionCodeList"
+                  :key="i"
+                  :value="item.region_code"
+                  :label="item.name"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -63,8 +79,9 @@
           <div class="grid-content bg-purple">
             <el-form-item label="视屏类型">
               <el-select v-model="form.type" clearable placeholder="请选择视屏类型" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option value="" label="全部"></el-option>
+                <el-option value="1" label="监控"></el-option>
+                <el-option value="2" label="呼叫器"></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -76,35 +93,41 @@
         </el-col>
       </el-row>
     </el-form>
-    <el-row class="videoArea" >
+    <el-row class="videoArea">
       <el-col>
-        <div class="grid-content bg-purple">1</div>
+        <div class="grid-content bg-purple"></div>
       </el-col>
       <el-col>
-        <div class="grid-content bg-purple">2</div>
+        <div class="grid-content bg-purple"></div>
       </el-col>
       <el-col>
-        <div class="grid-content bg-purple">3</div>
+        <div class="grid-content bg-purple"></div>
       </el-col>
       <el-col>
-        <div class="grid-content bg-purple">4</div>
+        <div class="grid-content bg-purple"></div>
       </el-col>
       <el-col>
-        <div class="grid-content bg-purple">5</div>
+        <div class="grid-content bg-purple"></div>
       </el-col>
       <el-col>
-        <div class="grid-content bg-purple">6</div>
+        <div class="grid-content bg-purple"></div>
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script>
-import { chooseDate } from "@/utils";
+import { chooseDate, saveUserLogin } from "@/utils";
+import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
+import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
+import { queryGate } from "@/request/parkRecord/queryGate";
 export default {
   data() {
     return {
       form: {
+        parkCode: "",
+        regionCode: "",
+        type: "",
         timerange: "",
         date: "1",
         startTime: "",
@@ -115,7 +138,8 @@ export default {
         disabledDate: function(time) {
           return time.getTime() > Date.now();
         }
-      }
+      },
+      regionCodeList: []
     };
   },
   methods: {
@@ -127,7 +151,31 @@ export default {
       this.form.startTime = form.timerange[0];
       this.form.endTime = form.timerange[1];
       console.log(form);
+    },
+    choosePark(val) {
+      this.form.regionCode = "";
+      const reqData = {
+        park_code: val
+      };
+      queryRegionCode(
+        reqData,
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          // this.regionCodeList = [];
+          let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+          this.regionCodeList = regionCodeList;
+        } else {
+        }
+      });
     }
+  },
+  computed: {
+    ...mapState(["parkCodeList", "userLogin"])
+  },
+  mounted() {
+    saveUserLogin();
   }
 };
 </script>
@@ -195,7 +243,7 @@ export default {
 }
 .btnCol {
   text-align: center;
-  .btn{
+  .btn {
     background: #3e549d;
   }
 }

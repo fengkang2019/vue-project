@@ -160,10 +160,10 @@
     </el-row>
     <el-row class="chartsRow" v-if="value==2" type="flex" justify="space-between">
       <el-col style="width:49.5%">
-        <Pie chartId="Pie5" height="100%" width="100%" text="异常开闸时段分析" />
+        <!-- <Pie chartId="Pie5" height="100%" width="100%" text="异常开闸时段分析" /> -->
       </el-col>
       <el-col style="width:49.5%">
-        <Pie chartId="Pie6" height="100%" width="100%" text="异常开闸车牌类型分析" />
+        <!-- <Pie chartId="Pie6" height="100%" width="100%" text="异常开闸车牌类型分析" /> -->
       </el-col>
     </el-row>
     <LookImage :imageVisible="imageVisible" />

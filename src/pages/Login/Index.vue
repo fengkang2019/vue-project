@@ -142,19 +142,19 @@ export default {
       const that = this;
       this.$dhweb.login("fly001", "fly123456", process.env.EQUIPMENT_IP);
       //获取设备列表
-      let deviceLists = [];
-      this.$dhweb.onDeviceList = function(object) {
-        let deviceList = object.params.list;
+      // let deviceLists = [];
+      // this.$dhweb.onDeviceList = function(object) {
+      //   let deviceList = object.params.list;
 
-        for (var i in deviceList) {
-          let deviceObj = {};
-          deviceObj.label = deviceList[i].deviceName;
-          deviceObj.devId =deviceList[i].deviceId;
-          deviceObj.action =deviceList[i].action;
-          deviceLists.push(deviceObj);
-        }
-      };
-      this.$store.commit("saveDeviceLists", deviceLists);
+      //   for (var i in deviceList) {
+      //     let deviceObj = {};
+      //     deviceObj.label = deviceList[i].deviceName;
+      //     deviceObj.devId =deviceList[i].deviceId;
+      //     deviceObj.action =deviceList[i].action;
+      //     deviceLists.push(deviceObj);
+      //   }
+      // };
+      // this.$store.commit("saveDeviceLists", deviceLists);
       this.$dhweb.onLogin = function(data) {
         var params = data.params;
         if (data.error == "success") {
@@ -166,9 +166,9 @@ export default {
             that.$router.push({ name: "longcutoff" });
           }
         } else {
-          that.$message.error("当前网络状态差,设备登录失败");
+          that.$message.error("当前网络状态差,设备登录失败!");
           setTimeout(function() {
-            that.$message.info("正在重新登录,请耐心等待!");
+            that.$message.info("请重新登录!");
             that.$router.go(0);
           }, 1500);
         }

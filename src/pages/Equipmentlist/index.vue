@@ -22,12 +22,12 @@
             <el-form-item label="呼叫器编号">
               <el-select v-model="form.regionCode" clearable placeholder="请选择区域" size="small">
                 <el-option value label="全部"></el-option>
-                <el-option v-for="(item,i) in deviceLists" :key="i" :value="item.devId"></el-option>
+                <el-option v-for="(item,i) in devNo" :key="i" :value="item.devNo"></el-option>
               </el-select>
             </el-form-item>
           </div>
         </el-col>
-        <el-col :span="2"  class="btnCol">
+        <el-col :span="2" class="btnCol">
           <div class="grid-content bg-purple">
             <el-button @click="searchList(form)" type="primary" class="btn" size="small">查询</el-button>
           </div>
@@ -79,12 +79,14 @@
             <span>{{(form.current-1)*form.size+scope.$index+1}}</span>
           </template>
         </el-table-column>
-        <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
-        <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
+        <el-table-column fixed prop="parkName" label="停车场"></el-table-column>
+        <el-table-column fixed prop="regionName" label="区域"></el-table-column>
+        <el-table-column fixed prop="gateName" label="通道"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
         <el-table-column fixed prop="devVer" label="版本号"></el-table-column>
         <el-table-column :formatter="formatter" fixed prop="addTime" label="添加时间"></el-table-column>
-        <el-table-column fixed prop="devIp" label="ip地址"></el-table-column>
+        <el-table-column fixed prop="cameraId" label="设备ID"></el-table-column>
+        <el-table-column fixed prop="monitorId" label="监控ID"></el-table-column>
         <el-table-column :formatter="formatter2" fixed prop="activeDate" label="启用时间"></el-table-column>
         <el-table-column
           key="1"
@@ -104,7 +106,14 @@
           label="报废说明"
         ></el-table-column>
         <el-table-column key="4" v-if="form.status=='1'" fixed prop="modifyTime" label="停用时间"></el-table-column>
-        <el-table-column key="5" v-if="form.status=='0'" fixed prop="endDate" label="到期日期"></el-table-column>
+        <el-table-column
+          key="5"
+          v-if="form.status=='0'"
+          :formatter="formatter4"
+          fixed
+          prop="endDate"
+          label="到期日期"
+        ></el-table-column>
         <el-table-column key="6" v-if="form.status!='2'" fixed="right" width="150px" label="操作">
           <template slot-scope="scope">
             <el-button
@@ -155,7 +164,13 @@
       </div>
     </el-row>
     <ChangeStatus :state="state" :msg="msg" :status="status" :currentData="currentData" />
-    <Dialogs :visibleFlag="visibleFlag" :flag="flag" :currentData="currentData" />
+    <Dialogs
+      :flag="flag"
+      :currentData="currentData"
+      :regions="regions"
+      :gates="gates"
+      v-if="visibleFlag"
+    />
   </div>
 </template>
 
@@ -165,29 +180,20 @@ import Dialogs from "./Dialogs";
 import ChangeStatus from "./ChangeStatus";
 import { saveUserLogin } from "@/utils";
 import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
+import { queryGate } from "@/request/parkRecord/queryGate";
+import { getCutoffReason } from "@/request/parkRecord/CutoffReason";
 import { mapState } from "vuex";
 export default {
   components: { Dialogs, ChangeStatus },
   data() {
     return {
       form: {
-        // timerange: "",
         status: "0",
-        // date: "1",
         type: "caller",
-        // startTime: "",
-        // endTime: "",
         current: 1,
         size: 10,
         total: 0
       },
-      // rangeTime: ["00:00:00", "23:59:59"],
-      // pikerOptions: {
-      //   disabledDate: function(time) {
-      //     return time.getTime() > Date.now();
-      //   }
-      // },
-
       tableData: [],
       visibleFlag: false,
       //0 新增 1编辑 2详情
@@ -196,11 +202,14 @@ export default {
       //1 正常 2故障 3报废
       status: "0",
       msg: "",
-      currentData: {}
+      currentData: {},
+      regions: [],
+      gates: [],
+      devNo:[],
     };
   },
   computed: {
-    ...mapState(["userLogin", "parkCodeList", "deviceLists"])
+    ...mapState(["userLogin", "parkCodeList"])
   },
   methods: {
     searchList: function(form) {
@@ -210,17 +219,22 @@ export default {
     addCaller: function() {
       this.visibleFlag = true;
       this.flag = "1";
-      this.currentData = {};
+      this.currentData = {
+        parkCode:"",
+        regionCode:"",
+        gateCode:""
+      };
     },
     //确定新增设备
     confirmAdd(val) {
+      console.log(val);
       this.$axios.post("/pagerInsert/insertDevice", val).then(res => {
         if (res) {
           this.search(this.form);
+          this.$message.success("新增成功");
         }
       });
     },
-   
 
     changeType(type) {},
     //点击单选 设备状态
@@ -250,12 +264,12 @@ export default {
       this.$axios.post("/pagerUpdate/updateDevice", val).then(res => {
         if (res) {
           this.search(this.form);
+          this.$message.success("修改成功");
         }
       });
     },
     //点击详情
-    handleClickDetails(row, index) {
-      console.log(index);
+    handleClickDetails(row) {
       this.visibleFlag = true;
       this.flag = "3";
       this.currentData = row;
@@ -324,9 +338,35 @@ export default {
     formatter3(row) {
       let moment = this.$moment(row.heartTime, "YYYYMMDDHHmmss");
       return moment.format("YYYY-MM-DD HH:mm:ss");
+    },
+    formatter4(row) {
+      let moment = this.$moment(row.endDate, "YYYYMMDD");
+      return moment.format("YYYY-MM-DD");
+    },
+    getDevices() {
+      const reqData = {
+        devNo: "",
+        current: 1,
+        size: 100
+      };
+      this.$axios.post("/pagerSelect/getDeviceState", reqData).then(res => {
+        if(res.data.records.length>0){
+          let datas =res.data.records;
+          let devNo =[];
+          for(var i=0;i<datas.length;i++){
+            let obj ={};
+            obj.devNo =datas[i].devNo;
+            devNo.push(obj);
+          }
+          this.devNo =devNo;
+        }else{
+          return false;
+        }
+      });
     }
   },
   mounted() {
+    this.getDevices();
     saveUserLogin();
   }
 };
