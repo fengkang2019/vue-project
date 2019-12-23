@@ -155,10 +155,11 @@ export default {
     },
     loginOut(val) {
       if (val == "loginOut") {
-        // console.log(this.$route.name);
         this.$store.commit("saveRoute", this.$route.name);
         this.$router.push({ name: "login" });
         this.$dhweb.logout(this.$store.state.loginHandle);
+        sessionStorage.clear();
+        localStorage.clear();
       }
     }
   },

@@ -367,7 +367,7 @@ export default {
   },
   mounted() {
     this.getDevices();
-    saveUserLogin();
+    saveUserLogin(this);
   }
 };
 </script>

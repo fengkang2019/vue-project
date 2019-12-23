@@ -27,6 +27,13 @@
       "unicode_decimal": 58934
     },
     {
+      "icon_id": "2529754",
+      "name": "文件夹、目录、分类",
+      "font_class": "folder",
+      "unicode": "e620",
+      "unicode_decimal": 58912
+    },
+    {
       "icon_id": "4854093",
       "name": "设备管理",
       "font_class": "shebeiguanli",
@@ -53,6 +60,13 @@
       "font_class": "guaduan",
       "unicode": "e6fc",
       "unicode_decimal": 59132
+    },
+    {
+      "icon_id": "10056232",
+      "name": "警报",
+      "font_class": "jingbao",
+      "unicode": "e701",
+      "unicode_decimal": 59137
     },
     {
       "icon_id": "10810175",

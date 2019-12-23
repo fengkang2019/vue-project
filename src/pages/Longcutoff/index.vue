@@ -117,8 +117,16 @@
                 @node-click="handleNodeClick"
                 :default-expand-all="true"
                 :highlight-current="true"
+                class="nodeTree"
                 icon-class="el-icon-folder-opened"
-              ></el-tree>
+              >
+                <span class="my-custom" slot-scope="{ node , data }">
+                  <i
+                    :class="[data.icon,data.action==1?'online icon-jingbao iconfont':'offline icon-jingbao iconfont']"
+                  ></i>
+                  <span>{{node.label}}</span>
+                </span>
+              </el-tree>
             </el-col>
           </el-row>
         </div>
@@ -362,6 +370,7 @@ export default {
       deviceList: [
         {
           label: "武汉无人值守项目",
+          icon: "iconfont icon-folder",
           children: []
         }
       ],
@@ -369,8 +378,8 @@ export default {
       restaurants: [],
       showCarId: "",
       isAnswered: false,
-      onlineCount:0,
-      offlineCount:0,
+      onlineCount: 0,
+      offlineCount: 0
     };
   },
   methods: {
@@ -436,7 +445,7 @@ export default {
             this.searchDevParkInfo(item);
             this.playRT();
           } else {
-            this.$message.error("此设备暂无数据,无法接听")
+            this.$message.error("此设备暂无数据,无法接听");
             return false;
           }
         });
@@ -724,33 +733,35 @@ export default {
     //主动打开 监控摄像头
     handleNodeClick(device) {
       console.log("主动打开摄像头");
-      let that =this;
-      this.state2 = true;
-      this.stopAllRT();
-      this.$dhweb.playRT(
-        $("#callerVideo")[0],
-        device.devId,
-        this.$store.state.loginHandle,
-        true
-      );
-      this.$dhweb.onPlayRT = function(data) {
-        console.log(data);
-        if (data.error == "success") {
-          console.log("视屏打开成功");
-          that.$axios.post("/pagerInsert/insertRecord", {
-            parkCode: device.parkCode,
-            regionCode: device.regionCode,
-            type: "2",
-            status: "1",
-            devNo: device.devNo,
-            userNo: that.$store.state.userLogin.ent_name,
-            callTime: that.$moment().format("YYYYMMDDHHmmss"),
-            startTime: that.$moment().format("YYYYMMDDHHmmss"),
-            endTime:"",
-            remark: ""
-          });
-        }
-      };
+      if (device.action == 1) {
+        let that = this;
+        this.state2 = true;
+        this.stopAllRT();
+        this.$dhweb.playRT(
+          $("#callerVideo")[0],
+          device.devId,
+          this.$store.state.loginHandle,
+          true
+        );
+        this.$dhweb.onPlayRT = function(data) {
+          console.log(data);
+          if (data.error == "success") {
+            console.log("视屏打开成功");
+            that.$axios.post("/pagerInsert/insertRecord", {
+              parkCode: device.parkCode,
+              regionCode: device.regionCode,
+              type: "2",
+              status: "1",
+              devNo: device.devNo,
+              userNo: that.$store.state.userLogin.ent_name,
+              callTime: that.$moment().format("YYYYMMDDHHmmss"),
+              startTime: that.$moment().format("YYYYMMDDHHmmss"),
+              endTime: "",
+              remark: ""
+            });
+          }
+        };
+      }
     },
     //获取所有设备状态和id
     getDevices() {
@@ -763,17 +774,17 @@ export default {
         .then(res => {
           if (res.data.records.length > 0) {
             let datas = res.data.records;
-            this.onlineCount =datas[0].online;
-            this.offlineCount =datas[0].offline;
+            this.onlineCount = datas[0].online;
+            this.offlineCount = datas[0].offline;
             let deviceLists = [];
             for (var i = 0; i < datas.length; i++) {
               let obj = {};
               obj.label = datas[i].name;
               obj.devId = datas[i].cameraId;
-              obj.action = datas[i].state;
-              obj.parkCode=datas[i].parkCode;
-              obj.regionCode=datas[i].regionCode;
-              obj.devNo =datas[i].devNo;
+              obj.action = datas[i].heartTime;
+              obj.parkCode = datas[i].parkCode;
+              obj.regionCode = datas[i].regionCode;
+              obj.devNo = datas[i].devNo;
               deviceLists.push(obj);
             }
             this.deviceList[0].children = deviceLists;
@@ -838,7 +849,7 @@ export default {
     this.getDevices();
   },
   mounted() {
-    console.log(this.$store.state.userLogin)
+    console.log(this.$store.state.userLogin);
     saveUserLogin(this);
     getCutoffReason({
       category_en: "except_open_gate"
@@ -968,10 +979,11 @@ $fff: #fff;
               display: flex;
               align-items: center;
               justify-content: center;
+              font-weight: 700;
               span:nth-child(3n + 1) {
                 display: block;
-                width: 15px;
-                height: 15px;
+                width: 10px;
+                height: 10px;
                 background: #0fab00;
                 border-radius: 50%;
               }
@@ -1012,6 +1024,28 @@ $fff: #fff;
         }
         .callrecord {
           height: 34%;
+        }
+        .nodeTree {
+          padding-left: 30px;
+          .el-tree-node__children {
+            .el-tree-node__expand-icon {
+              display: none;
+            }
+          }
+
+          .el-tree-node__children {
+            .online {
+              color: #0fab00;
+            }
+            .offline {
+              color: red;
+            }
+          }
+          .my-custom {
+            .icon-folder {
+              display: none;
+            }
+          }
         }
       }
     }
@@ -1336,11 +1370,11 @@ $fff: #fff;
             }
           }
           .inCar2 {
-            text-align:center;
+            text-align: center;
             div.icon-changyongtubiao-xianxingdaochu-zhuanqu- {
               font-size: 60px;
               color: #ccc;
-              margin-top:30px;
+              margin-top: 30px;
             }
             p {
               font-weight: 600;
