@@ -5,7 +5,7 @@
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="所属停车场">
-              <el-select v-model="form.parkCode" clearable placeholder="请输入停车场名称" size="small">
+              <el-select v-model="form.parkCode" clearable placeholder="请输入停车场名称" size="small" filterable>
                 <el-option value label="全部"></el-option>
                 <el-option
                   v-for="(item,i) in parkCodeList"

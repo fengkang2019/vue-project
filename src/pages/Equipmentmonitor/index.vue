@@ -9,6 +9,7 @@
                 @change="choosePark(form.parkCode)"
                 v-model="form.parkCode"
                 placeholder="请选择停车场"
+                filterable
               >
                 <el-option label="全部" value></el-option>
                 <el-option

@@ -56,9 +56,21 @@
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="停车场" label-width="80px">
-              <el-select v-model="form.parkCode" clearable placeholder="请输入停车场名称" size="small">
-                <el-option value="" label="全部"></el-option>
-                <!-- <el-option v-if="(item,i) in parkCodeList" :key="i" :value="item.park_code" :label="item.full_name"></el-option> -->
+              <el-select
+                v-model="form.parkCode"
+                clearable
+                placeholder="请输入停车场名称"
+                size="small"
+                filterable
+                @change="chooseParkCode(form.parkCode)"
+              >
+                <el-option value label="全部"></el-option>
+                <el-option
+                  v-for="(item,i) in parkCodeList"
+                  :key="i"
+                  :value="item.park_code"
+                  :label="item.full_name"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -67,8 +79,13 @@
           <div class="grid-content bg-purple">
             <el-form-item label="区域" label-width="80px">
               <el-select v-model="form.regionCode" clearable placeholder="请选择区域" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option value label="全部"></el-option>
+                <el-option
+                  v-for="(item,i) in regionCodeList"
+                  :key="i"
+                  :value="item.region_code"
+                  :label="item.name"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -92,8 +109,13 @@
                 clearable
                 size="small"
               >
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option value label="全部"></el-option>
+                <el-option
+                  v-for="(item,i) in abnormal"
+                  :key="i"
+                  :label="item.item"
+                  :value="item.cval"
+                ></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -102,8 +124,7 @@
           <div class="grid-content bg-purple">
             <el-form-item label="开闸人">
               <el-select v-model="form.oprator" clearable placeholder="请选择客服人员" size="small">
-                <el-option value="1" label="广东"></el-option>
-                <el-option value="2" label="深圳"></el-option>
+                <el-option value label="全部"></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -177,6 +198,8 @@ import { chooseDate } from "@/utils";
 import LookImage from "./LookImage";
 import { mapState } from "vuex";
 import { saveUserLogin } from "@/utils";
+import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
+import { getCutoffReason } from "@/request/parkRecord/CutoffReason";
 
 export default {
   components: { Pie, Bar, LookImage },
@@ -210,7 +233,9 @@ export default {
       ],
       currentPage: 1,
       pagesize: 10,
-      imageVisible: false
+      imageVisible: false,
+      regionCodeList: [],
+      abnormal: []
     };
   },
   methods: {
@@ -233,6 +258,25 @@ export default {
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val;
+    },
+    //选择停车场得到区域
+    chooseParkCode(val) {
+      this.form.regionCode = "";
+      const reqData = {
+        park_code: val
+      };
+      queryRegionCode(
+        reqData,
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          this.regionCodeList = [];
+          let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+          this.regionCodeList = regionCodeList;
+        } else {
+        }
+      });
     },
     //点击导出
     exportToExcel: function() {
@@ -275,11 +319,16 @@ export default {
       this.imageVisible = true;
     }
   },
-  computed:{
-    ...mapState(["userLogin","parkCodeList"])
+  computed: {
+    ...mapState(["userLogin", "parkCodeList"])
   },
   mounted() {
-    saveUserLogin();
+    saveUserLogin(this);
+    getCutoffReason({ category_en: "except_open_gate" }).then(res => {
+      if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+        this.abnormal = res.data.ANSWERS[0].ANS_COMM_DATA;
+      }
+    });
   }
 };
 </script>

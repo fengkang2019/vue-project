@@ -18,6 +18,7 @@
           size="small"
           v-model="currentData.parkCode"
           placeholder="请输入所属停车场"
+          filterable
         >
           <el-option
             v-for="(item,i) in parkCodeList"

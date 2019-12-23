@@ -4,7 +4,20 @@
     <div class="searchForm">
       <el-form size="small" :inline="true" :model="form">
         <el-form-item label="停车场：">
-          <el-select v-model="form.parkCode" placeholder="请选择停车场" @change="chooseParkCode(form)"></el-select>
+          <el-select
+            v-model="form.parkCode"
+            placeholder="请选择停车场"
+            @change="chooseParkCode(form.parkCode)"
+            filterable
+          >
+            <el-option vlaue label="全部"></el-option>
+            <el-option
+              v-for="(item,i) in parkCodeList"
+              :key="i"
+              :value="item.park_code"
+              :label="item.full_name"
+            ></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="客服姓名：">
           <el-input v-model="form.name" placeholder="请输入客服姓名"></el-input>
@@ -296,7 +309,7 @@ export default {
     this.searchGroups();
   },
   computed: {
-    ...mapState(["userLogin"])
+    ...mapState(["userLogin", "parkCodeList"])
   }
 };
 </script>

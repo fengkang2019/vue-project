@@ -41,7 +41,7 @@
         <el-col :span="7">
           <div class="grid-content bg-purple">
             <el-form-item label="停车场">
-              <el-select v-model="form.parklot" clearable placeholder="请输入停车场名称" size="small">
+              <el-select v-model="form.parklot" clearable placeholder="请输入停车场名称" size="small" filterable>
                 <el-option value="" label="全部"></el-option>
 
                 <el-option v-for="(item,i) in parkCodeList" :key="i" :value="item.park_code" :label="item.full_name"></el-option>
@@ -63,10 +63,10 @@
     </el-row>
     <el-row class="echart" type="flex" justify="space-between">
       <el-col style="width:49.5%">
-        <Pie chartId="PieLeft" height="100%" width="100%" text="故障厂商分析" />
+        <!-- <Pie chartId="PieLeft" height="100%" width="100%" text="故障厂商分析" /> -->
       </el-col>
       <el-col style="width:49.5%">
-        <Pie chartId="PieRight" height="100%" width="100%" text="报废率厂商分析" />
+        <!-- <Pie chartId="PieRight" height="100%" width="100%" text="报废率厂商分析" /> -->
       </el-col>
     </el-row>
   </div>

@@ -48,6 +48,7 @@
                 clearable
                 placeholder="请输入停车场名称"
                 size="small"
+                filterable
               >
                 <el-option value label="全部"></el-option>
                 <el-option
