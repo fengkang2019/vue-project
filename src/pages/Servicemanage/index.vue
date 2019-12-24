@@ -10,7 +10,7 @@
             @change="chooseParkCode(form.parkCode)"
             filterable
           >
-            <el-option vlaue label="全部"></el-option>
+            <el-option vlaue="" label="全部"></el-option>
             <el-option
               v-for="(item,i) in parkCodeList"
               :key="i"

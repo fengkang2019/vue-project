@@ -1,9 +1,8 @@
 <template>
   <el-dialog
     :title="flag=='1'?'新增':flag=='2'?'编辑':'详情'"
-    :visible="true"
+    :visible="visibleFlag"
     :before-close="handleClose"
-    :opened="getRegionAndGate()"
     width="25%"
   >
     <el-form :model="currentData" class="dialog" :disabled="flag=='3'" :rules="rules" ref="myForm">
@@ -41,6 +40,13 @@
             :label="item.name"
             :value="item.region_code"
           ></el-option>
+          <el-option
+            v-show="isTrue"
+            v-for="(item,i) in regions"
+            :key="i+9999"
+            :label="item.name"
+            :value="item.region_code"
+          ></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="所属通道" :label-width="formLabelWidth">
@@ -51,6 +57,7 @@
             :label="item.name"
             :value="item.gate_code"
           ></el-option>
+          <el-option   v-show="isTrue" v-for="(item,i) in gates"  :key="i+9999" :label="item.name" :value="item.gate_code"></el-option>
         </el-select>
       </el-form-item>
 
@@ -117,11 +124,7 @@
           autocomplete="off"
         ></el-input>
       </el-form-item>
-      <el-form-item
-        v-show="flag=='3'"
-        label="最后编辑日期"
-        :label-width="formLabelWidth"
-      >
+      <el-form-item v-show="flag=='3'" label="最后编辑日期" :label-width="formLabelWidth">
         <el-input
           size="small"
           v-model="currentData.heartTime"
@@ -129,11 +132,7 @@
           placeholder="日期格式:20190101121212"
         ></el-input>
       </el-form-item>
-      <el-form-item
-        v-show="flag=='3'"
-        label="编辑人员"
-        :label-width="formLabelWidth"
-      >
+      <el-form-item v-show="flag=='3'" label="编辑人员" :label-width="formLabelWidth">
         <el-input
           size="small"
           v-model="currentData.modifyOperateNo"
@@ -171,7 +170,7 @@ export default {
           { required: true, message: "请输入设备类型", trigger: "change" }
         ],
         name: [{ required: true, message: "请输入设备名称", trigger: "blur" }],
-    
+
         devModel: [
           { required: true, message: "请输入设备型号", trigger: "blur" }
         ],
@@ -187,14 +186,17 @@ export default {
         ],
         endDate: [
           { required: true, message: "请输入到期日期", trigger: "blur" }
-        ],
+        ]
       },
       regionCodeList: [],
-      GateCodeList: []
+      GateCodeList: [],
+      isTrue: true
     };
   },
   methods: {
     dialogFormVisible(currentData) {
+      this.$refs.myForm.validate(valid => {
+        if (valid) {
           if (this.flag == "1") {
             console.log("新增");
             this.$parent.confirmAdd(currentData);
@@ -202,26 +204,23 @@ export default {
             console.log("编辑");
             this.$parent.confirmEdit(currentData);
           }
-          this.regionCodeList = [];
-          this.GateCodeList = [];
-          this.$parent.visibleFlag = false;
-      
-    
+        } else {
+          this.$message.error("请输入完整且正确的设备信息");
+        }
+      });
+
+      this.$parent.visibleFlag = false;
     },
     handleClose() {
-      this.regionCodeList = [];
-      this.GateCodeList = [];
-      console.log(11)
       this.$parent.visibleFlag = false;
     },
     cancel() {
-      this.regionCodeList = [];
-      this.GateCodeList = [];
       this.$parent.visibleFlag = false;
     },
     //选择停车场得到区域
     chooseParkCode(val) {
       this.currentData.regionCode = "";
+      this.isTrue =false;
       const reqData = {
         park_code: val
       };
@@ -257,49 +256,12 @@ export default {
         } else {
         }
       });
-    },
-    getRegionAndGate() {
-      if (this.regionCodeList.length == 0) {
-        console.log(11);
-        queryRegionCode(
-          { park_code: this.currentData.parkCode },
-          this.$store.state.userLogin.cust_id,
-          this.$store.state.userLogin.session
-        ).then(res => {
-          if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-            let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
-            this.regionCodeList = regionCodeList;
-          } else {
-            return false;
-          }
-        });
-      }
-      if (this.regionCodeList.length == 0) {
-        queryGate(
-          {
-            park_code: this.currentData.parkCode,
-            region_code: this.currentData.regionCode
-          },
-          this.$store.state.userLogin.cust_id,
-          this.$store.state.userLogin.session
-        ).then(res => {
-          if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-            let GateCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
-            this.GateCodeList = GateCodeList;
-          } else {
-          }
-        });
-      }
     }
   },
   computed: {
     ...mapState(["parkCodeList", "userLogin"])
   },
-  created() {
-    //得到区域信息
-    //得到通道信息
-  },
-  beforeMounte() {},
+
   mounted() {
     saveUserLogin(this);
     // getCutoffReason({

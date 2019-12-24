@@ -5,7 +5,13 @@
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="所属停车场">
-              <el-select v-model="form.parkCode" clearable placeholder="请输入停车场名称" size="small" filterable>
+              <el-select
+                v-model="form.parkCode"
+                clearable
+                placeholder="请输入停车场名称"
+                size="small"
+                filterable
+              >
                 <el-option value label="全部"></el-option>
                 <el-option
                   v-for="(item,i) in parkCodeList"
@@ -167,9 +173,9 @@
     <Dialogs
       :flag="flag"
       :currentData="currentData"
-      :regions="regions"
-      :gates="gates"
-      v-if="visibleFlag"
+      :regions="regionCodeList"
+      :gates="GateCodeList"
+      :visibleFlag="visibleFlag"
     />
   </div>
 </template>
@@ -205,7 +211,10 @@ export default {
       currentData: {},
       regions: [],
       gates: [],
-      devNo:[],
+      devNo: [],
+      regionCodeList: [],
+      GateCodeList: [],
+    
     };
   },
   computed: {
@@ -220,9 +229,9 @@ export default {
       this.visibleFlag = true;
       this.flag = "1";
       this.currentData = {
-        parkCode:"",
-        regionCode:"",
-        gateCode:""
+        parkCode: "",
+        regionCode: "",
+        gateCode: ""
       };
     },
     //确定新增设备
@@ -258,6 +267,14 @@ export default {
       this.visibleFlag = true;
       this.flag = "2";
       this.currentData = val;
+      let parkCode = val.parkCode;
+      let regionCode = val.regionCode;
+      if (parkCode) {
+        this.getRegionCode(parkCode);
+      }
+      if (parkCode && regionCode) {
+        this.getGateCode(parkCode, regionCode);
+      }
     },
     //确认修改
     confirmEdit(val) {
@@ -273,6 +290,14 @@ export default {
       this.visibleFlag = true;
       this.flag = "3";
       this.currentData = row;
+      let parkCode = row.parkCode;
+      let regionCode = row.regionCode;
+      if (parkCode) {
+        this.getRegionCode(parkCode);
+      }
+      if (parkCode && regionCode) {
+        this.getGateCode(parkCode, regionCode);
+      }
     },
     //点击正常
     handleClick0(row, index) {
@@ -350,17 +375,51 @@ export default {
         size: 100
       };
       this.$axios.post("/pagerSelect/getDeviceState", reqData).then(res => {
-        if(res.data.records.length>0){
-          let datas =res.data.records;
-          let devNo =[];
-          for(var i=0;i<datas.length;i++){
-            let obj ={};
-            obj.devNo =datas[i].devNo;
+        if (res.data.records.length > 0) {
+          let datas = res.data.records;
+          let devNo = [];
+          for (var i = 0; i < datas.length; i++) {
+            let obj = {};
+            obj.devNo = datas[i].devNo;
             devNo.push(obj);
           }
-          this.devNo =devNo;
-        }else{
+          this.devNo = devNo;
+        } else {
           return false;
+        }
+      });
+    },
+    //根据停车获得区域信息
+    getRegionCode(parkCode) {
+      queryRegionCode(
+        { park_code: parkCode },
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          let regionCodeList = [];
+          regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+          this.regionCodeList = regionCodeList;
+        } else {
+          return false;
+        }
+      });
+    },
+    //根据停车场和区域获取通道信息
+    getGateCode(parkCode, regionCode) {
+      queryGate(
+        {
+          park_code: parkCode,
+          region_code: regionCode
+        },
+        this.$store.state.userLogin.cust_id,
+        this.$store.state.userLogin.session
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          let GateCodeList = [];
+          GateCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+          this.GateCodeList = GateCodeList;
+        } else {
         }
       });
     }

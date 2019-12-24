@@ -140,7 +140,7 @@ export default {
     },
     loginEquipment() {
       const that = this;
-      this.$dhweb.login("cs001", "cs001", process.env.EQUIPMENT_IP);
+      this.$dhweb.login("fly001", "fly123456", process.env.EQUIPMENT_IP);
       //获取设备列表
       // let deviceLists = [];
       // this.$dhweb.onDeviceList = function(object) {
