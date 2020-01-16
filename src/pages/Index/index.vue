@@ -74,28 +74,28 @@
               <template slot="title">
                 <i class="el-icon-chat-dot-square"></i>
                 <span>用户反馈</span>
-              </template> -->
-              <!-- <el-menu-item-group>
+            </template>-->
+            <!-- <el-menu-item-group>
                 <el-menu-item index="3-1">选项2</el-menu-item>
-              </el-menu-item-group> -->
-              <!-- <el-submenu index="3-2">
+            </el-menu-item-group>-->
+            <!-- <el-submenu index="3-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="3-2-1">选项1</el-menu-item>
-              </el-submenu> -->
+            </el-submenu>-->
             <!-- </el-submenu> -->
             <!-- 工单中心 -->
             <!-- <el-submenu index="4">
               <template slot="title">
                 <i class="el-icon-document"></i>
                 <span>工单中心</span>
-              </template> -->
-              <!-- <el-menu-item-group>
+            </template>-->
+            <!-- <el-menu-item-group>
                 <el-menu-item index="4-1">选项2</el-menu-item>
-              </el-menu-item-group> -->
-              <!-- <el-submenu index="4-2">
+            </el-menu-item-group>-->
+            <!-- <el-submenu index="4-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="4-2-1">选项1</el-menu-item>
-              </el-submenu> -->
+            </el-submenu>-->
             <!-- </el-submenu> -->
             <!-- 人员设置 -->
             <el-submenu index="5">
@@ -112,14 +112,14 @@
               <template slot="title">
                 <i class="el-icon-setting"></i>
                 <span>系统设置</span>
-              </template> -->
-              <!-- <el-menu-item-group>
+            </template>-->
+            <!-- <el-menu-item-group>
                 <el-menu-item index="6-1">选项2</el-menu-item>
-              </el-menu-item-group> -->
-              <!-- <el-submenu index="6-2">
+            </el-menu-item-group>-->
+            <!-- <el-submenu index="6-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="6-2-1">选项1</el-menu-item>
-              </el-submenu> -->
+            </el-submenu>-->
             <!-- </el-submenu> -->
           </el-menu>
         </el-aside>
@@ -139,7 +139,9 @@ export default {
   data() {
     return {
       active: "1",
-      user: "操作员"
+      user: "操作员",
+      _beforeUnload_time: 0,
+      _gap_time: 0
     };
   },
   methods: {
@@ -161,16 +163,46 @@ export default {
         sessionStorage.clear();
         localStorage.clear();
       }
+    },
+    beforeunloadHandler() {
+      this._beforeUnload_time = new Date().getTime();
+    },
+    unloadHandler(e) {
+      this._gap_time = new Date().getTime() - this._beforeUnload_time;
+      console.log( this._gap_time)
+        debugger;
+
+      //判断是窗口关闭还是刷新
+      if (this._gap_time <= 5) {
+        debugger;
+
+        //如果是登录状态，关闭窗口前，移除用户
+        // if (!this.showLoginButton) {
+        //   $.ajax({
+        //     url: "/pictureweb/user/remove",
+        //     type: "get",
+        //     async: false //或false,是否异步
+        //   });
+        // }
+      }
     }
   },
   mounted() {
     if (sessionStorage.getItem("account")) {
       this.user = JSON.parse(sessionStorage.getItem("account")).user;
     }
-    saveUserLogin(this);
+    window.addEventListener("beforeunload", e => this.beforeunloadHandler(e));
+    window.addEventListener("unload", e => this.unloadHandler(e));
+    // saveUserLogin(this);
   },
   computed: {
     ...mapState(["loginHandle"])
+  },
+  destroyed() {
+    window.removeEventListener("beforeunload", e =>
+      this.beforeunloadHandler(e)
+    );
+    window.removeEventListener("unload", e => this.unloadHandler(e));
   }
 };
 </script>
